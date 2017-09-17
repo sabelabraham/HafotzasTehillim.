@@ -1,0 +1,105 @@
+.view {
+	-fx-padding: 15.0;
+}
+
+
+.list-view {
+	-fx-background-color: transparent;
+	-fx-padding: 15.0 0.0 0.0 0.0;
+}
+
+.list-view .hbox {
+	-fx-spacing: 15.0;
+}
+
+.list-view .list-cell{
+	-fx-border-color: #cfcfcf;
+	-fx-cell-size: 30.0;
+	-fx-cursor: hand;
+}
+
+.list-view .list-cell:empty {
+	-fx-border-color: transparent;
+	-fx-background-color: transparent;
+}
+
+.list-view .round-edged-list-cell:first {
+	-fx-border-radius: 7.0 7.0 0.0 0.0;
+	-fx-background-radius: 7.0 7.0 0.0 0.0;
+}
+
+.list-view .round-edged-list-cell:last {
+	-fx-border-radius: 0.0 0.0 7.0 7.0;
+	-fx-background-radius: 0.0 0.0 7.0 7.0;
+}
+
+.list-view .round-edged-list-cell:single {
+	-fx-border-radius:  7.0;
+	-fx-background-radius: 7.0;
+}
+
+#new-member-button {
+	-fx-text-fill: gray;
+}
+
+#search-field-pane {
+	-fx-background-color: white;
+	-fx-background-radius: 7.0;
+	-fx-border-color: #CFCFCF;
+	-fx-border-radius: 7.0;
+	-fx-padding: 0.0 0.5 5.0 0.5;
+}
+
+
+#search-field {
+	-fx-padding: 35.0 5.0 5.0 5.0;
+	-jfx-focus-color: dodgerblue;
+	-jfx-unfocus-color: gray;
+	-jfx-label-float: true;
+	-fx-border-color: null;
+	-fx-background-color: transparent;
+}
+
+
+#search-icon, #save-icon {
+	-fx-fill: dodgerblue;
+	-fx-scale-x: 1.2;
+	-fx-scale-y: 1.2;
+}
+
+#details-button {
+	-fx-text-fill: dodgerblue;
+}
+
+#search-button {
+	-fx-padding: 15.0;
+}
+
+#search-button .jfx-rippler{
+	-fx-rippler-radius: 40.0;
+	-fx-mask-type: CIRCLE;
+}
+
+#info {
+	-fx-padding: 15.0;
+	-fx-background-color: white;
+	-fx-background-radius: 7.0;
+	-fx-border-color: #CFCFCF;
+	-fx-border-radius: 7.0;
+}
+
+#save-button {
+	-fx-border-color: transparent transparent transparent #CFCFCF;
+	-fx-border-insets: 1.0 1.0 1.0 0.0;
+}
+
+.jfx-hamburger-icon{
+    -fx-spacing: 5.0;
+    -fx-cursor: hand;
+}
+.jfx-hamburger-icon StackPane{
+    -fx-pref-width: 40.0px;
+    -fx-pref-height: 7.0px;
+    -fx-background-color : #D63333;
+    -fx-background-radius : 5.0px;
+}

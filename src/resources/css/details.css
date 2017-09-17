@@ -1,0 +1,17 @@
+#point-pane {
+	-fx-border-color: #cfcfcf;
+	-fx-border-radius: 10.0;
+}
+
+#points-list {
+	-fx-border-color: #bababa;
+	-fx-background-color: white;
+}
+
+#points-list .list-cell {
+	-fx-cell-size: 30;
+}
+
+#add {
+    -fx-text-fill: dodgerblue;
+}

@@ -1,0 +1,25 @@
+.spreadsheet-selection-dialog {
+	-fx-padding: 15.0;
+	-fx-spacing: 10.0;
+}
+
+#choose-file, #browser {
+    -jfx-button-type: RAISED;
+    -fx-background-color: dodgerblue;
+    -fx-text-fill: white;
+}
+
+.hyperlink {
+	-fx-border-color: transparent;
+	-fx-padding: 0;
+	-fx-translate-y: -1.5;
+}
+
+.hyperlink:visited {
+	-fx-text-fill: green;
+}
+
+#ok {
+	-fx-text-fill: dodgerblue;
+	-fx-padding: 5.0 30.0 5.0 30.0;
+}

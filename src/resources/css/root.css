@@ -1,0 +1,21 @@
+.root {
+	-fx-background-color: #f5f5f5;
+}
+
+.scroll-pane {
+	-fx-hbar-policy: never;
+	-fx-fit-to-width: true;
+}
+
+.scroll-pane .viewport {
+	-fx-background-color: transparent;
+}
+
+.jfx-rippler {
+	-jfx-rippler-fill: gray;
+	-jfx-rippler-radius: 200;
+}
+
+.refresh .icon {
+	-fx-fill: #aaaaaa;
+}

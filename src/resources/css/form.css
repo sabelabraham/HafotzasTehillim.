@@ -1,0 +1,11 @@
+.combo-box {
+	-fx-background-color: white;
+	-fx-border-color: #bababa;
+	-fx-border-radius: 2.5;
+}
+
+#edit-icon, #save-icon {
+	-fx-fill: dodgerblue;
+	-fx-scale-x: 1.2;
+	-fx-scale-y: 1.2;
+}

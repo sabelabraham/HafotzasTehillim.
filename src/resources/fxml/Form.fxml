@@ -1,0 +1,103 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXRadioButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.ComboBox?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<GridPane maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="700.0" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hafotzastehillim.fx.FormController">
+  <columnConstraints>
+    <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
+      <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="25.0" />
+      <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="250.0" />
+      <ColumnConstraints halignment="RIGHT" hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+  </columnConstraints>
+  <rowConstraints>
+    <RowConstraints minHeight="10.0" prefHeight="30.0" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+    <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+  </rowConstraints>
+   <children>
+      <Label text="Member ID:" />
+      <Label text="First Name:" GridPane.rowIndex="1" />
+      <Label text="Last Name:" GridPane.rowIndex="2" />
+      <Label text="Address:" GridPane.rowIndex="3" />
+      <Label text="City:" GridPane.rowIndex="4" />
+      <Label text="State:" GridPane.rowIndex="5" />
+      <TextField fx:id="firstName" GridPane.columnIndex="1" GridPane.rowIndex="1" />
+      <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1">
+         <children>
+            <TextField fx:id="id" editable="false" focusTraversable="false" maxWidth="100.0" />
+            <JFXRadioButton fx:id="boy" focusTraversable="false" text="Boy">
+               <toggleGroup>
+                  <ToggleGroup fx:id="gender" />
+               </toggleGroup>
+            </JFXRadioButton>
+            <JFXRadioButton fx:id="girl" focusTraversable="false" text="Girl" toggleGroup="$gender" />
+         </children>
+      </HBox>
+      <TextField fx:id="lastName" GridPane.columnIndex="1" GridPane.rowIndex="2" />
+      <HBox alignment="CENTER_LEFT" prefHeight="100.0" prefWidth="200.0" GridPane.columnIndex="1" GridPane.rowIndex="3">
+         <children>
+            <TextField fx:id="addressNumber" prefWidth="71.0" HBox.hgrow="NEVER" />
+            <TextField fx:id="addressName" HBox.hgrow="ALWAYS" />
+            <Group>
+               <children>
+                  <Label text="Apt:">
+                     <padding>
+                        <Insets left="7.0" right="3.0" />
+                     </padding>
+                  </Label>
+               </children>
+            </Group>
+            <TextField fx:id="apt" prefWidth="60.0" HBox.hgrow="NEVER" />
+         </children>
+      </HBox>
+      <TextField fx:id="city" GridPane.columnIndex="1" GridPane.rowIndex="4" />
+      <HBox alignment="CENTER_LEFT" GridPane.columnIndex="1" GridPane.rowIndex="5">
+         <children>
+            <TextField fx:id="state" HBox.hgrow="ALWAYS" />
+            <Group>
+               <children>
+                  <Label text="Zip:">
+                     <padding>
+                        <Insets left="7.0" right="3.0" />
+                     </padding>
+                  </Label>
+               </children>
+            </Group>
+            <TextField fx:id="zip" HBox.hgrow="ALWAYS" />
+         </children>
+      </HBox>
+      <Label text="ערשטע  נאמען:" GridPane.columnIndex="4" GridPane.rowIndex="1" />
+      <Label text="לעצטע נאמען:" GridPane.columnIndex="4" GridPane.rowIndex="2" />
+      <Label text="Phone:" GridPane.rowIndex="6" />
+      <TextField fx:id="phone" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+      <TextField fx:id="firstNameYiddish" nodeOrientation="RIGHT_TO_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1" />
+      <TextField fx:id="lastNameYiddish" nodeOrientation="RIGHT_TO_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="2" />
+      <Label text="טאטע'ס נאמען:" GridPane.columnIndex="4" GridPane.rowIndex="3" />
+      <TextField fx:id="fatherName" nodeOrientation="RIGHT_TO_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="3" />
+      <Label text="מוסד:" GridPane.columnIndex="4" GridPane.rowIndex="4" />
+      <TextField fx:id="school" nodeOrientation="RIGHT_TO_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+      <Label text="שטאט:" GridPane.columnIndex="4" GridPane.rowIndex="6" />
+      <Label text="כתה/קלאס:" GridPane.columnIndex="4" GridPane.rowIndex="5" />
+      <TextField fx:id="age" nodeOrientation="RIGHT_TO_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="5" />
+      <ComboBox fx:id="cityYiddish" focusTraversable="false" nodeOrientation="RIGHT_TO_LEFT" prefWidth="5000.0" GridPane.columnIndex="3" GridPane.hgrow="ALWAYS" GridPane.rowIndex="6" />
+   </children>
+   <padding>
+      <Insets bottom="25.0" left="25.0" right="25.0" top="25.0" />
+   </padding>
+</GridPane>
