@@ -1,5 +1,7 @@
 package org.hafotzastehillim.spreadsheet;
 
+import static org.hafotzastehillim.spreadsheet.SearchType.ENTRY_LIST;
+
 import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
@@ -24,6 +26,8 @@ import org.hafotzastehillim.fx.Main;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import javafx.application.Platform;
+import javafx.beans.value.WritableIntegerValue;
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -33,100 +37,24 @@ public class LocalSpreadsheet implements Spreadsheet {
 
 	private File file;
 	private XSSFWorkbook workbook;
-	private ObservableList<Entry> entries;
 	private Service<Void> search;
 	private Service<Void> load;
 
-	private AtomicReference<String> query;
+	private volatile String query;
+	private volatile ObservableList<? super Entry> consumerList;
+	private volatile WritableValue<? super Entry> consumerRef;
+	private volatile WritableIntegerValue consumerRow;
+	private volatile ColumnMatcher matcher;
+	private volatile Column[] columns;
+	private volatile SearchType type;
 
 	public LocalSpreadsheet(File file) throws InvalidFormatException, IOException {
 		this.file = file;
-
-		query = new AtomicReference<>();
-		entries = FXCollections.observableArrayList();
-
-		search = new Service<Void>() {
-
-			@Override
-			protected Task<Void> createTask() {
-				return new Task<Void>() {
-
-					@Override
-					protected void scheduled() {
-						entries.clear();
-					}
-
-					@Override
-					protected Void call() throws Exception {
-						String q = query.get().toLowerCase().replace(" ", "");
-
-						for (int i = 0; i < workbook.getNumberOfSheets(); i++) {
-							Sheet sheet = workbook.getSheetAt(i);
-							if (sheet == null)
-								continue;
-
-							for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
-								Row row = sheet.getRow(j);
-								if (row == null)
-									continue;
-
-								if (Search.matches(LocalSpreadsheet.this, i, j, q)) {
-									add(i, j);
-								}
-
-							}
-						}
-
-						return null;
-					}
-
-					private void add(int sheet, int row) {
-						Platform.runLater(() -> entries.add(new Entry(LocalSpreadsheet.this, sheet, row)));
-					}
-
-				};
-			}
-
-		};
-
-		search.setOnFailed(evt -> {
-			Main.pushNotification("Search Failed");
-			search.getException().printStackTrace();
-		});
-
-		load = new Service<Void>() {
-			@Override
-			protected void scheduled() {
-				query.set(null);
-				entries.clear();
-			}
-
-			@Override
-			protected Task<Void> createTask() {
-				return new Task<Void>() {
-					@Override
-					protected Void call() throws Exception {
-
-						try (FileInputStream in = new FileInputStream(file)) {
-							workbook = new XSSFWorkbook(in);
-						}
-						evaluator = workbook.getCreationHelper().createFormulaEvaluator();
-
-						return null;
-					}
-				};
-			}
-		};
-
-		load.setOnFailed(evt -> {
-			Main.pushNotification("Load Failed");
-			load.getException().printStackTrace();
-		});
 		reload();
 	}
 
 	private static final DataFormatter formatter = new DataFormatter();
-	private FormulaEvaluator evaluator;
+	private volatile FormulaEvaluator evaluator;
 
 	@Override
 	public List<String> getRow(int sheet, int row) {
@@ -141,9 +69,8 @@ public class LocalSpreadsheet implements Spreadsheet {
 		evaluator.clearAllCachedResultValues();
 
 		List<String> list = new ArrayList<>();
-		// FIXME NPE here!!!!
 		for (Cell c : r) {
-			list.add(formatter.formatCellValue(c));
+			list.add(formatter.formatCellValue(c, evaluator));
 		}
 
 		return list;
@@ -223,27 +150,43 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void search(String query) {
-		if (query == null || query.isEmpty())
+	public void search(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+		if (q == null || q.isEmpty())
 			return;
 
-		if (query.equals(this.query.get()))
+		if (q.equals(query))
 			return;
 
-		if (search.isRunning() || load.isRunning())
+		if (load.isRunning())
 			return;
 
-		this.query.set(query);
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		consumerList = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = ENTRY_LIST;
+
 		search.restart();
 	}
 
 	@Override
-	public Entry findFirst(String query, ColumnMatcher matcher, Column... columns) {
+	public void findFirst(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher,
+			Column... columns) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
-	public int findRowInTab(int tab, String query, ColumnMatcher matcher, Column... columns) {
+	public void findLast(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher,
+			Column... columns) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher,
+			Column... columns) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -282,7 +225,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 
 	@Override
 	public void reload() {
-		load.restart();
+		loadService().restart();
 	}
 
 	public Workbook getWorkbook() {
@@ -291,17 +234,99 @@ public class LocalSpreadsheet implements Spreadsheet {
 
 	@Override
 	public Service<Void> searchService() {
+		if (search == null) {
+
+			search = new Service<Void>() {
+
+				@Override
+				protected Task<Void> createTask() {
+					return new Task<Void>() {
+
+						@Override
+						protected Void call() throws Exception {
+							if (type != SearchType.ENTRY_LIST)
+								return null;
+
+							consumerList.clear();
+							String q = query.toLowerCase().replace(" ", "");
+
+							int size = Math.min(workbook.getNumberOfSheets(), Tab.cities().size());
+
+							outer: for (int i = 0; i < size; i++) {
+								Sheet sheet = workbook.getSheetAt(i);
+								if (sheet == null)
+									continue;
+
+								for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
+
+									if (isCancelled())
+										break outer;
+
+									Row row = sheet.getRow(j);
+									if (row == null)
+										continue;
+
+									if (Search.matches(LocalSpreadsheet.this, i, j, q, matcher, columns)) {
+										add(i, j);
+									}
+
+								}
+							}
+
+							return null;
+						}
+
+						private void add(int sheet, int row) {
+							Platform.runLater(() -> consumerList.add(new Entry(LocalSpreadsheet.this, sheet, row)));
+						}
+
+					};
+				}
+
+			};
+
+			search.setOnFailed(evt -> {
+				Main.pushNotification("Search Failed");
+				search.getException().printStackTrace();
+			});
+
+		}
+
 		return search;
 	}
 
 	@Override
 	public Service<Void> loadService() {
-		return load;
-	}
+		if (load == null) {
+			load = new Service<Void>() {
+				@Override
+				protected void scheduled() {
+					query = null;
+				}
 
-	@Override
-	public ObservableList<Entry> getResults() {
-		return entries;
+				@Override
+				protected Task<Void> createTask() {
+					return new Task<Void>() {
+						@Override
+						protected Void call() throws Exception {
+
+							try (FileInputStream in = new FileInputStream(file)) {
+								workbook = new XSSFWorkbook(in);
+							}
+							evaluator = workbook.getCreationHelper().createFormulaEvaluator();
+
+							return null;
+						}
+					};
+				}
+			};
+
+			load.setOnFailed(evt -> {
+				Main.pushNotification("Load Failed");
+				load.getException().printStackTrace();
+			});
+		}
+		return load;
 	}
 
 }

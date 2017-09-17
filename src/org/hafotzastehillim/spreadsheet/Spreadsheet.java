@@ -3,6 +3,9 @@ package org.hafotzastehillim.spreadsheet;
 import java.util.List;
 
 import javafx.beans.property.StringProperty;
+import javafx.beans.value.ObservableValue;
+import javafx.beans.value.WritableIntegerValue;
+import javafx.beans.value.WritableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -23,19 +26,19 @@ public interface Spreadsheet {
 
 	int uniqueId(int tab);
 
-	void search(String query);
+	void search(String query, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns);
 
-	Entry findFirst(String query, ColumnMatcher matcher, Column... columns);
+	void findFirst(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, Column... columns);
 
-	int findRowInTab(int tab, String query, ColumnMatcher matcher, Column... columns);
+	void findLast(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, Column... columns);
+
+	void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher, Column... columns);
 
 	Service<Void> searchService();
 
 	void reload();
 
 	Service<Void> loadService();
-
-	ObservableList<Entry> getResults();
 
 	// default String getCellValue(Entry entry, Column column) {
 	// return getCellValue(entry.getTab(), entry.getRow(), column.getColumn());

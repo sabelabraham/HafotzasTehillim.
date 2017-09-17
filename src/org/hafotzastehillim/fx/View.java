@@ -6,6 +6,7 @@ import java.util.prefs.Preferences;
 
 import org.hafotzastehillim.spreadsheet.Column;
 import org.hafotzastehillim.spreadsheet.Entry;
+import org.hafotzastehillim.spreadsheet.Search;
 import org.hafotzastehillim.spreadsheet.Spreadsheet;
 import org.hafotzastehillim.spreadsheet.Tab;
 
@@ -26,6 +27,8 @@ import javafx.beans.binding.StringBinding;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.concurrent.Task;
 import javafx.concurrent.Worker.State;
 import javafx.geometry.Insets;
@@ -64,7 +67,8 @@ public class View extends VBox {
 	private JFXButton newMember;
 	private HBox topBar;
 
-	private ListView<Entry> results;
+	private ListView<Entry> resultListView;
+	private ObservableList<Entry> resultList;
 
 	private Label campaignLabel;
 	private Spinner<Integer> currentCampaign;
@@ -83,6 +87,8 @@ public class View extends VBox {
 	private static final String CAMPAIGN_INDEX_KEY = "CampaignIndex";
 
 	public View() {
+		resultList = FXCollections.observableArrayList();
+
 		model = Model.getInstance();
 		model.spreadsheetProperty().addListener((obs, ov, nv) -> {
 			detachOldSpreadsheet(ov);
@@ -120,7 +126,8 @@ public class View extends VBox {
 		searchPath.setId("search-icon");
 		searchButton.setGraphic(searchPath);
 
-		query.setOnAction(evt -> model.getSpreadsheet().search(query.getText()));
+		query.setOnAction(evt -> model.getSpreadsheet().search(query.getText(), resultList, Search.getMatcher(),
+				Search.getColumns()));
 		searchButton.setOnAction(query.getOnAction());
 
 		Util.circleClip(searchButton);
@@ -173,7 +180,8 @@ public class View extends VBox {
 		newMember.setId("new-member-button");
 		newMember.setOnAction(evt -> DetailsPane.showNewDialog());
 
-		results = new ListView<>();
+		resultListView = new ListView<>();
+		resultListView.setItems(resultList);
 
 		int campaignIndex = prefs.getInt(CAMPAIGN_INDEX_KEY, 1);
 
@@ -195,7 +203,7 @@ public class View extends VBox {
 		campaignLabelAndSpinner.setPadding(new Insets(15));
 		campaignLabelAndSpinner.setAlignment(Pos.BASELINE_CENTER);
 
-		ReadOnlyObjectProperty<Entry> selected = results.getSelectionModel().selectedItemProperty();
+		ReadOnlyObjectProperty<Entry> selected = resultListView.getSelectionModel().selectedItemProperty();
 		model.currentEntryProperty().bind(selected);
 
 		name = new Text();
@@ -306,7 +314,7 @@ public class View extends VBox {
 		Pane spacer = new Pane();
 		VBox.setVgrow(spacer, Priority.ALWAYS);
 		VBox bottomRight = new VBox(campaignLabelAndSpinner, info, spacer, pointsPane);
-		HBox bottom = new HBox(results, bottomRight);
+		HBox bottom = new HBox(resultListView, bottomRight);
 		bottom.setSpacing(10);
 		bottom.setAlignment(Pos.CENTER);
 
@@ -343,7 +351,6 @@ public class View extends VBox {
 			return;
 
 		refresh.mouseTransparentProperty().unbind();
-		s.getResults().clear();
 		graphics.refreshingProperty().unbind();
 	}
 
@@ -351,13 +358,15 @@ public class View extends VBox {
 		if (s == null)
 			return;
 
-		results.setItems(s.getResults());
-		results.setCellFactory(lv -> new EntryCell(7, Bindings.size(s.getResults())));
+		resultListView.setCellFactory(lv -> new EntryCell(7, Bindings.size(resultList)));
 
 		refresh.mouseTransparentProperty().bind(s.loadService().runningProperty());
+		s.loadService().setOnScheduled(evt -> resultList.clear());
+		s.searchService().setOnScheduled(evt -> resultList.clear());
+
 		s.searchService().setOnSucceeded(evt -> {
-			results.requestFocus();
-			results.getSelectionModel().selectFirst();
+			resultListView.requestFocus();
+			resultListView.getSelectionModel().selectFirst();
 		});
 
 		s.searchService().stateProperty().addListener((obs, ov, nv) -> {

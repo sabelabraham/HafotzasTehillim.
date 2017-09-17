@@ -13,6 +13,8 @@ import com.google.i18n.phonenumbers.AsYouTypeFormatter;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.jfoenix.controls.JFXRadioButton;
 
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
 import javafx.css.PseudoClass;
 import javafx.event.ActionEvent;
@@ -126,28 +128,28 @@ public class FormController {
 			if (entry != null)
 				return;
 
-			Entry e = Model.getInstance().getSpreadsheet().findFirst(phone.getText().replaceAll("[^\\d]", ""),
+			ObjectProperty<Entry> consumer = new SimpleObjectProperty<>();
+			consumer.addListener((obs, ov, nv) -> {
+				Entry newEntry = new Entry(Model.getInstance().getSpreadsheet());
+				newEntry.setTab(nv.getTab());
+
+				newEntry.setLastName(nv.getLastName());
+				newEntry.setAddressNumber(nv.getAddressNumber());
+				newEntry.setAddressName(nv.getAddressName());
+				newEntry.setApt(nv.getApt());
+				newEntry.setCity(nv.getCity());
+				newEntry.setState(nv.getState());
+				newEntry.setZip(nv.getZip());
+				newEntry.setPhone(nv.getPhone());
+				newEntry.setFatherName(nv.getFatherName());
+				newEntry.setLastNameYiddish(nv.getLastNameYiddish());
+				newEntry.setCityYiddish(nv.getCityYiddish());
+
+				setEntry(newEntry);
+			});
+
+			Model.getInstance().getSpreadsheet().findFirst(phone.getText().replaceAll("[^\\d]", ""), consumer,
 					(q, v, c) -> q.equals(v), Column.PHONE);
-
-			if (e == null)
-				return;
-
-			Entry newEntry = new Entry(Model.getInstance().getSpreadsheet());
-			newEntry.setTab(e.getTab());
-
-			newEntry.setLastName(e.getLastName());
-			newEntry.setAddressNumber(e.getAddressNumber());
-			newEntry.setAddressName(e.getAddressName());
-			newEntry.setApt(e.getApt());
-			newEntry.setCity(e.getCity());
-			newEntry.setState(e.getState());
-			newEntry.setZip(e.getZip());
-			newEntry.setPhone(e.getPhone());
-			newEntry.setFatherName(e.getFatherName());
-			newEntry.setLastNameYiddish(e.getLastNameYiddish());
-			newEntry.setCityYiddish(e.getCityYiddish());
-
-			setEntry(newEntry);
 		});
 	}
 

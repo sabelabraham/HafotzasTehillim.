@@ -1,5 +1,7 @@
 package org.hafotzastehillim.spreadsheet;
 
+import static org.hafotzastehillim.spreadsheet.SearchType.*;
+
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -25,6 +27,8 @@ import com.google.api.services.sheets.v4.model.ValueRange;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import javafx.application.Platform;
+import javafx.beans.value.WritableIntegerValue;
+import javafx.beans.value.WritableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
@@ -44,8 +48,14 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	private LinkedBlockingQueue<Update> updates;
 	private Thread updater;
 
-	private AtomicReference<String> query;
-	private ObservableList<Entry> entries;
+	private volatile String query;
+	private volatile ObservableList<? super Entry> consumerList;
+	private volatile WritableValue<? super Entry> consumerRef;
+	private volatile WritableIntegerValue consumerRow;
+	private volatile int searchTab;
+	private volatile ColumnMatcher matcher;
+	private volatile Column[] columns;
+	private volatile SearchType type;
 
 	private List<Integer> highestIds;
 
@@ -53,107 +63,9 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		sheetId = id;
 		this.service = service;
 
-		query = new AtomicReference<>();
-		entries = FXCollections.observableArrayList();
-
 		highestIds = new ArrayList<>();
 		cache = new ConcurrentHashMap<>();
 		updates = new LinkedBlockingQueue<>();
-
-		search = new Service<Void>() {
-
-			@Override
-			protected Task<Void> createTask() {
-				return new Task<Void>() {
-
-					@Override
-					protected void scheduled() {
-						entries.clear();
-					}
-
-					@Override
-					protected Void call() throws Exception {
-						String q = query.get().toLowerCase().replace(" ", "");
-
-						for (int i = 0; i < cache.size(); i++) {
-							for (int j = 0; j < cache.get(i).size(); j++) {
-								if (Search.matches(GoogleSpreadsheet.this, i, j, q)) {
-									add(i, j);
-								}
-							}
-						}
-						return null;
-					}
-
-					private void add(int sheet, int row) {
-						Platform.runLater(() -> entries.add(new Entry(GoogleSpreadsheet.this, sheet, row)));
-					}
-				};
-			}
-
-		};
-
-		search.setOnFailed(evt -> {
-			Main.pushNotification("Search Failed");
-			search.getException().printStackTrace();
-		});
-
-		load = new Service<Void>() {
-			@Override
-			protected void scheduled() {
-				query.set(null);
-				entries.clear();
-			}
-
-			@Override
-			protected Task<Void> createTask() {
-				return new Task<Void>() {
-					@Override
-					protected Void call() throws Exception {
-						lookForNewTabs();
-
-						List<String> batch = new ArrayList<>();
-						for (String tab : tabs) {
-							batch.add(tab + "!A:ZZ");
-						}
-
-						List<List<List<Object>>> response = doLoadRangeBatch(batch);
-
-						for (int i = 0; i < tabs.size(); i++) {
-							List<List<Object>> tab = response.get(i);
-							cache.put(i, tab);
-
-							int max = 0;
-							for (int row = 1; row < tab.size(); row++) {
-								try {
-									max = Math.max(
-											Integer.parseInt(tab.get(row).get(Column.ID_NUMBER.getColumn()).toString()),
-											max);
-								} catch (NumberFormatException e) {
-									Main.pushNotification("INVALID ID: Tab: " + (i + 1) + ", Row: " + (row + 1));
-								}
-							}
-
-							if (i > highestIds.size())
-								throw new AssertionError("Should not happen");
-
-							if (i == highestIds.size()) {
-								highestIds.add(max);
-							} else {
-								highestIds.set(i, max);
-							}
-						}
-
-						return null;
-					}
-				};
-			}
-		};
-
-		load.setOnFailed(evt -> {
-			Main.pushNotification("Load Failed");
-			load.getException().printStackTrace();
-		});
 
 		updater = new Thread() {
 			@Override
@@ -393,57 +305,93 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void search(String query) {
-		if (query == null || query.isEmpty())
+	public void search(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+		if (q == null || q.isEmpty())
 			return;
 
-		if (query.equals(this.query.get()))
+		if (q.equals(query))
 			return;
 
-		if (search.isRunning() || load.isRunning())
+		if (load.isRunning())
 			return;
 
-		this.query.set(query);
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		consumerList = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = ENTRY_LIST;
+
 		search.restart();
 	}
 
 	@Override
-	public Entry findFirst(String query, ColumnMatcher matcher, Column... columns) {
-		for (int i = 0; i < cache.size(); i++) {
-			for (int j = 0; j < cache.get(i).size(); j++) {
-				for (Column col : columns) {
-					if (col.getColumn() >= cache.get(i).get(j).size())
-						continue;
+	public void findFirst(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+		if (q == null || q.isEmpty())
+			return;
 
-					if (matcher.matches(query, cache.get(i).get(j).get(col.getColumn()).toString(), col)) {
-						return new Entry(this, i, j);
-					}
-				}
-			}
-		}
+		if (load.isRunning())
+			return;
 
-		return null;
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		consumerRef = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = FIRST_ENTRY;
+
+		search.restart();
 	}
 
 	@Override
-	public int findRowInTab(int tab, String query, ColumnMatcher matcher, Column... columns) {
-		for (int j = 0; j < cache.get(tab).size(); j++) {
-			for (Column col : columns) {
-				if (col.getColumn() >= cache.get(tab).get(j).size())
-					continue;
+	public void findLast(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+		if (q == null || q.isEmpty())
+			return;
 
-				if (matcher.matches(query, cache.get(tab).get(j).get(col.getColumn()).toString(), col)) {
-					return j;
-				}
-			}
-		}
+		if (load.isRunning())
+			return;
 
-		return -1;
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		consumerRef = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = LAST_ENTRY;
+
+		search.restart();
+	}
+
+	@Override
+	public void findRowInTab(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher,
+			Column... columns) {
+		if (q == null || q.isEmpty())
+			return;
+
+		if (load.isRunning())
+			return;
+
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		searchTab = tab;
+		consumerRow = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = ROW_IN_TAB;
+
+		search.restart();
 
 	}
 
 	public void reload() {
-		load.restart();
+		loadService().restart();
 	}
 
 	public void reloadTab(int tab) throws IOException {
@@ -468,17 +416,140 @@ public class GoogleSpreadsheet implements Spreadsheet {
 
 	@Override
 	public Service<Void> searchService() {
+		if (search == null) {
+			search = new Service<Void>() {
+
+				@Override
+				protected Task<Void> createTask() {
+					return new Task<Void>() {
+
+						@Override
+						protected Void call() throws Exception {
+							String q = query.toLowerCase().replace(" ", "");
+
+							if (type == ENTRY_LIST || type == FIRST_ENTRY) {
+								consumerList.clear();
+
+								int size = Math.min(cache.size(), Tab.cities().size());
+
+								outer: for (int i = 0; i < size; i++) {
+									for (int j = 0; j < cache.get(i).size(); j++) {
+										if (Search.matches(GoogleSpreadsheet.this, i, j, q, matcher, columns)) {
+											if (isCancelled())
+												break outer;
+
+											add(i, j);
+
+											if (type == FIRST_ENTRY)
+												break outer;
+										}
+									}
+								}
+							} else if (type == LAST_ENTRY) {
+								int size = Math.min(cache.size(), Tab.cities().size());
+
+								outer: for (int i = size; i >= 0; i--) {
+									for (int j = cache.get(i).size(); j >= 0; j--) {
+										if (Search.matches(GoogleSpreadsheet.this, i, j, q, matcher, columns)) {
+											if (isCancelled())
+												break outer;
+
+											add(i, j);
+											break outer;
+										}
+									}
+								}
+							}
+
+							return null;
+						}
+
+						private void add(int sheet, int row) {
+							Platform.runLater(() -> {
+								Entry e = new Entry(GoogleSpreadsheet.this, sheet, row);
+
+								if (type == ENTRY_LIST)
+									consumerList.add(e);
+								else
+									consumerRef.setValue(e);
+							});
+						}
+					};
+				}
+
+			};
+
+			search.setOnFailed(evt -> {
+				Main.pushNotification("Search Failed");
+				search.getException().printStackTrace();
+			});
+		}
+
 		return search;
 	}
 
 	@Override
 	public Service<Void> loadService() {
-		return load;
-	}
+		if (load == null) {
+			load = new Service<Void>() {
+				@Override
+				protected void scheduled() {
+					query = null;
+				}
 
-	@Override
-	public ObservableList<Entry> getResults() {
-		return entries;
+				@Override
+				protected Task<Void> createTask() {
+					return new Task<Void>() {
+						@Override
+						protected Void call() throws Exception {
+							lookForNewTabs();
+
+							List<String> batch = new ArrayList<>();
+							for (String tab : tabs) {
+								batch.add(tab + "!A:ZZ");
+							}
+
+							List<List<List<Object>>> response = doLoadRangeBatch(batch);
+
+							for (int i = 0; i < tabs.size(); i++) {
+								List<List<Object>> tab = response.get(i);
+								cache.put(i, tab);
+
+								int max = 0;
+								for (int row = 1; row < tab.size(); row++) {
+									try {
+										max = Math.max(
+												Integer.parseInt(
+														tab.get(row).get(Column.ID_NUMBER.getColumn()).toString()),
+												max);
+									} catch (NumberFormatException e) {
+										Main.pushNotification("INVALID ID: Tab: " + (i + 1) + ", Row: " + (row + 1));
+									}
+								}
+
+								if (i > highestIds.size())
+									throw new AssertionError("Should not happen");
+
+								if (i == highestIds.size()) {
+									highestIds.add(max);
+								} else {
+									highestIds.set(i, max);
+								}
+							}
+
+							return null;
+						}
+					};
+				}
+			};
+
+			load.setOnFailed(evt -> {
+				Main.pushNotification("Load Failed");
+				load.getException().printStackTrace();
+			});
+		}
+
+		return load;
 	}
 
 	private static class Update {
