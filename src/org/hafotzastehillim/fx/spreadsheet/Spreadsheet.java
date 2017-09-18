@@ -26,13 +26,11 @@ public interface Spreadsheet {
 
 	int uniqueId(int tab);
 
-	void search(String query, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns);
+	void searchEntries(String query, ObservableList<? super Entry> consumer, ColumnMatcher matcher, int... columns);
 
-	void findFirst(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, Column... columns);
+	void findEntry(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, int... columns);
 
-	void findLast(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, Column... columns);
-
-	void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher, Column... columns);
+	void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns);
 
 	Service<Void> searchService();
 

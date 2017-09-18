@@ -55,7 +55,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	private volatile WritableIntegerValue consumerRow;
 	private volatile int searchTab;
 	private volatile ColumnMatcher matcher;
-	private volatile Column[] columns;
+	private volatile int[] columns;
 	private volatile SearchType type;
 
 	private List<Integer> highestIds;
@@ -306,7 +306,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void searchEntries(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+	public void searchEntries(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -329,7 +329,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findEntry(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+	public void findEntry(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -343,34 +343,14 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		consumerRef = consumer;
 		this.matcher = matcher;
 		this.columns = columns;
-		type = FIRST_ENTRY;
-
-		search.restart();
-	}
-
-	@Override
-	public void findLast(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
-		if (q == null || q.isEmpty())
-			return;
-
-		if (load.isRunning())
-			return;
-
-		if (search.isRunning())
-			search.cancel();
-
-		query = q;
-		consumerRef = consumer;
-		this.matcher = matcher;
-		this.columns = columns;
-		type = LAST_ENTRY;
+		type = ENTRY;
 
 		search.restart();
 	}
 
 	@Override
 	public void findRowInTab(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher,
-			Column... columns) {
+			int... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -426,37 +406,26 @@ public class GoogleSpreadsheet implements Spreadsheet {
 
 						@Override
 						protected Void call() throws Exception {
-							String q = query.toLowerCase().replace(" ", "");
 
-							if (type == ENTRY_LIST || type == FIRST_ENTRY) {
+							if (type == ENTRY_LIST || type == ENTRY) {
 								consumerList.clear();
+
+								String q = query;
+								ColumnMatcher m = matcher;
+								int[] c = columns;
 
 								int size = Math.min(cache.size(), Tab.cities().size());
 
 								outer: for (int i = 0; i < size; i++) {
 									for (int j = 0; j < cache.get(i).size(); j++) {
-										if (Search.matches(GoogleSpreadsheet.this, i, j, q, matcher, columns)) {
-											if (isCancelled())
-												break outer;
-
-											add(i, j);
-
-											if (type == FIRST_ENTRY)
-												break outer;
-										}
-									}
-								}
-							} else if (type == LAST_ENTRY) {
-								int size = Math.min(cache.size(), Tab.cities().size());
-
-								outer: for (int i = size; i >= 0; i--) {
-									for (int j = cache.get(i).size(); j >= 0; j--) {
-										if (Search.matches(GoogleSpreadsheet.this, i, j, q, matcher, columns)) {
-											if (isCancelled())
-												break outer;
-
-											add(i, j);
+										if (isCancelled())
 											break outer;
+
+										if (Search.matches(GoogleSpreadsheet.this, i, j, q, m, c)) {
+											found(i, j);
+
+											if (type == ENTRY)
+												break outer;
 										}
 									}
 								}
@@ -465,7 +434,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 							return null;
 						}
 
-						private void add(int sheet, int row) {
+						private void found(int sheet, int row) {
 							Platform.runLater(() -> {
 								Entry e = new Entry(GoogleSpreadsheet.this, sheet, row);
 

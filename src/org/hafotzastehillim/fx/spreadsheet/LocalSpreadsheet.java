@@ -1,5 +1,6 @@
 package org.hafotzastehillim.fx.spreadsheet;
 
+import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY;
 import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY_LIST;
 
 import java.io.File;
@@ -46,7 +47,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 	private volatile WritableValue<? super Entry> consumerRef;
 	private volatile WritableIntegerValue consumerRow;
 	private volatile ColumnMatcher matcher;
-	private volatile Column[] columns;
+	private volatile int[] columns;
 	private volatile SearchType type;
 
 	public LocalSpreadsheet(File file) throws InvalidFormatException, IOException {
@@ -151,7 +152,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void searchEntries(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+	public void searchEntries(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -174,20 +175,13 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findEntry(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher,
-			Column... columns) {
-		throw new UnsupportedOperationException();
-	}
-
-	@Override
-	public void findLast(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher,
-			Column... columns) {
+	public void findEntry(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
 		throw new UnsupportedOperationException();
 	}
 
 	@Override
 	public void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher,
-			Column... columns) {
+			int... columns) {
 		throw new UnsupportedOperationException();
 	}
 
@@ -249,7 +243,10 @@ public class LocalSpreadsheet implements Spreadsheet {
 								return null;
 
 							consumerList.clear();
-							String q = query.toLowerCase().replace(" ", "");
+
+							String q = query;
+							ColumnMatcher m = matcher;
+							int[] c = columns;
 
 							int size = Math.min(workbook.getNumberOfSheets(), Tab.cities().size());
 
@@ -267,8 +264,12 @@ public class LocalSpreadsheet implements Spreadsheet {
 									if (row == null)
 										continue;
 
-									if (Search.matches(LocalSpreadsheet.this, i, j, q, matcher, columns)) {
-										add(i, j);
+									if (Search.matches(LocalSpreadsheet.this, i, j, q, m, c)) {
+
+										found(i, j);
+
+										if (type == ENTRY)
+											break outer;
 									}
 
 								}
@@ -277,8 +278,15 @@ public class LocalSpreadsheet implements Spreadsheet {
 							return null;
 						}
 
-						private void add(int sheet, int row) {
-							Platform.runLater(() -> consumerList.add(new Entry(LocalSpreadsheet.this, sheet, row)));
+						private void found(int sheet, int row) {
+							Platform.runLater(() -> {
+								Entry e = new Entry(LocalSpreadsheet.this, sheet, row);
+
+								if (type == ENTRY_LIST)
+									consumerList.add(e);
+								else
+									consumerRef.setValue(e);
+							});
 						}
 
 					};
