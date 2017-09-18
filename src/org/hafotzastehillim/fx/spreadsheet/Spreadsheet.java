@@ -2,13 +2,10 @@ package org.hafotzastehillim.fx.spreadsheet;
 
 import java.util.List;
 
-import javafx.beans.property.StringProperty;
-import javafx.beans.value.ObservableValue;
 import javafx.beans.value.WritableIntegerValue;
 import javafx.beans.value.WritableValue;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
-import javafx.concurrent.Task;
 
 public interface Spreadsheet {
 

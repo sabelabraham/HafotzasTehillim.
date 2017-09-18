@@ -13,8 +13,6 @@ import java.nio.file.Path;
 import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.atomic.AtomicReference;
-
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
 import org.apache.poi.ss.usermodel.Cell;
 import org.apache.poi.ss.usermodel.DataFormatter;
@@ -26,12 +24,9 @@ import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hafotzastehillim.fx.Main;
 import org.hafotzastehillim.fx.util.Search;
 
-import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
-
 import javafx.application.Platform;
 import javafx.beans.value.WritableIntegerValue;
 import javafx.beans.value.WritableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;

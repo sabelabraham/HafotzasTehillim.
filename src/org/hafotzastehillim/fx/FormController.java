@@ -1,10 +1,7 @@
 package org.hafotzastehillim.fx;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
-import java.util.Locale;
-
 import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.spreadsheet.Tab;
@@ -16,18 +13,10 @@ import com.jfoenix.controls.JFXRadioButton;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
-import javafx.css.PseudoClass;
-import javafx.event.ActionEvent;
 import javafx.fxml.FXML;
-import javafx.geometry.NodeOrientation;
-import javafx.scene.control.Button;
 import javafx.scene.control.ComboBox;
-import javafx.scene.control.ComboBox;
-import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
-import javafx.scene.control.TextInputControl;
-import javafx.scene.shape.SVGPath;
 
 public class FormController {
 

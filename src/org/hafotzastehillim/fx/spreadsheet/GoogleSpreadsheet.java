@@ -5,32 +5,23 @@ import static org.hafotzastehillim.fx.spreadsheet.SearchType.*;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.TimeUnit;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.stream.Collectors;
 
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Sheet;
 import org.hafotzastehillim.fx.Main;
 import org.hafotzastehillim.fx.util.Search;
 import org.hafotzastehillim.fx.util.Util;
 
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
-import com.google.api.services.sheets.v4.model.UpdateValuesResponse;
 import com.google.api.services.sheets.v4.model.ValueRange;
-import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
-
 import javafx.application.Platform;
 import javafx.beans.value.WritableIntegerValue;
 import javafx.beans.value.WritableValue;
-import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
@@ -40,7 +31,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	private Sheets service;
 	private String sheetId;
 
-	private List<String> tabs; // Stick to enum
+	private List<String> tabs;
 	private Map<Integer, List<List<Object>>> cache;
 
 	private Service<Void> search;

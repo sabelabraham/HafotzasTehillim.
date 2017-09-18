@@ -1,10 +1,13 @@
 package org.hafotzastehillim.fx.util;
 
-import static org.hafotzastehillim.fx.spreadsheet.Column.*;
+import static org.hafotzastehillim.fx.spreadsheet.Column.ADDRESS_NAME;
+import static org.hafotzastehillim.fx.spreadsheet.Column.ADDRESS_NUMBER;
+import static org.hafotzastehillim.fx.spreadsheet.Column.LAST_NAME;
+import static org.hafotzastehillim.fx.spreadsheet.Column.LAST_NAME_YIDDISH;
+import static org.hafotzastehillim.fx.spreadsheet.Column.PHONE;
 
 import java.util.List;
 
-import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.ColumnMatcher;
 import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
 
