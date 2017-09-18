@@ -349,7 +349,8 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findRowInTab(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns) {
+	public void findRowInTab(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher,
+			int... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -403,20 +404,15 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				protected Task<Void> createTask() {
 					return new Task<Void>() {
 
-						private List<? super Entry> list = consumerList;
-						private WritableValue<? super Entry> ref = consumerRef;
-						private WritableIntegerValue rowInTab = consumerRow;
-						private int sTab = searchTab;
-
 						@Override
 						protected Void call() throws Exception {
 
-							String q = query;
-							ColumnMatcher m = matcher;
-							int[] c = columns;
-
 							if (type == ENTRY_LIST || type == ENTRY) {
 								consumerList.clear();
+
+								String q = query;
+								ColumnMatcher m = matcher;
+								int[] c = columns;
 
 								int size = Math.min(cache.size(), Tab.cities().size());
 
@@ -433,17 +429,6 @@ public class GoogleSpreadsheet implements Spreadsheet {
 										}
 									}
 								}
-							} else if (type == ROW_IN_TAB) {
-								for (int j = 0; j < cache.get(sTab).size(); j++) {
-									if (isCancelled())
-										break;
-
-									if (Search.matches(GoogleSpreadsheet.this, sTab, j, q, m, c)) {
-										rowInTab.set(j);
-										break;
-									}
-								}
-
 							}
 
 							return null;
@@ -454,9 +439,9 @@ public class GoogleSpreadsheet implements Spreadsheet {
 								Entry e = new Entry(GoogleSpreadsheet.this, sheet, row);
 
 								if (type == ENTRY_LIST)
-									list.add(e);
+									consumerList.add(e);
 								else
-									ref.setValue(e);
+									consumerRef.setValue(e);
 							});
 						}
 					};
