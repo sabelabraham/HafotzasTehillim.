@@ -1,4 +1,4 @@
-package org.hafotzastehillim.spreadsheet;
+package org.hafotzastehillim.fx.spreadsheet;
 
 import java.util.List;
 

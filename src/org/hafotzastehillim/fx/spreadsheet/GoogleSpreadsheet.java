@@ -1,6 +1,6 @@
-package org.hafotzastehillim.spreadsheet;
+package org.hafotzastehillim.fx.spreadsheet;
 
-import static org.hafotzastehillim.spreadsheet.SearchType.*;
+import static org.hafotzastehillim.fx.spreadsheet.SearchType.*;
 
 import java.io.IOException;
 import java.util.ArrayList;
@@ -18,7 +18,8 @@ import java.util.stream.Collectors;
 import org.apache.poi.ss.usermodel.Row;
 import org.apache.poi.ss.usermodel.Sheet;
 import org.hafotzastehillim.fx.Main;
-import org.hafotzastehillim.fx.Util;
+import org.hafotzastehillim.fx.util.Search;
+import org.hafotzastehillim.fx.util.Util;
 
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
@@ -305,7 +306,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void search(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+	public void searchEntries(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -328,7 +329,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findFirst(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+	public void findEntry(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
 		if (q == null || q.isEmpty())
 			return;
 

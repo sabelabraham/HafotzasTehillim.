@@ -5,9 +5,9 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 
-import org.hafotzastehillim.spreadsheet.Column;
-import org.hafotzastehillim.spreadsheet.Entry;
-import org.hafotzastehillim.spreadsheet.Tab;
+import org.hafotzastehillim.fx.spreadsheet.Column;
+import org.hafotzastehillim.fx.spreadsheet.Entry;
+import org.hafotzastehillim.fx.spreadsheet.Tab;
 
 import com.google.i18n.phonenumbers.AsYouTypeFormatter;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -148,8 +148,8 @@ public class FormController {
 				setEntry(newEntry);
 			});
 
-			Model.getInstance().getSpreadsheet().findFirst(phone.getText().replaceAll("[^\\d]", ""), consumer,
-					(q, v, c) -> q.equals(v), Column.PHONE);
+			Model.getInstance().getSpreadsheet().findEntry(phone.getText().replaceAll("[^\\d]", ""), consumer,
+					(q, v, c) -> q.equals(v), Column.PHONE.getColumn());
 		});
 	}
 

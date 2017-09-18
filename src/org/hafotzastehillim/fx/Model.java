@@ -1,7 +1,7 @@
 package org.hafotzastehillim.fx;
 
-import org.hafotzastehillim.spreadsheet.Entry;
-import org.hafotzastehillim.spreadsheet.Spreadsheet;
+import org.hafotzastehillim.fx.spreadsheet.Entry;
+import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
 
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;

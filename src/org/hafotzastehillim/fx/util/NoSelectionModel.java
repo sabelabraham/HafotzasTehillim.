@@ -1,4 +1,4 @@
-package org.hafotzastehillim.fx;
+package org.hafotzastehillim.fx.util;
 
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;

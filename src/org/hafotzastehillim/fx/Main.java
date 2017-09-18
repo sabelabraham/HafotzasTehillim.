@@ -16,7 +16,8 @@ import javax.net.ssl.SSLContext;
 import javax.net.ssl.TrustManager;
 import javax.net.ssl.X509TrustManager;
 
-import org.hafotzastehillim.spreadsheet.SheetsAPI;
+import org.hafotzastehillim.fx.spreadsheet.SheetsAPI;
+import org.hafotzastehillim.fx.util.Util;
 
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;

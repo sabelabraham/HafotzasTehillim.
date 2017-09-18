@@ -1,11 +1,11 @@
-package org.hafotzastehillim.spreadsheet;
+package org.hafotzastehillim.fx.spreadsheet;
 
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
 
-import org.hafotzastehillim.fx.Util;
+import org.hafotzastehillim.fx.util.Util;
 
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;

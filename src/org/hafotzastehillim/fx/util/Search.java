@@ -1,7 +1,12 @@
-package org.hafotzastehillim.spreadsheet;
+package org.hafotzastehillim.fx.util;
+
+import static org.hafotzastehillim.fx.spreadsheet.Column.*;
 
 import java.util.List;
-import static org.hafotzastehillim.spreadsheet.Column.*;
+
+import org.hafotzastehillim.fx.spreadsheet.Column;
+import org.hafotzastehillim.fx.spreadsheet.ColumnMatcher;
+import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
 
 public class Search {
 

@@ -4,11 +4,12 @@ import java.io.File;
 import java.util.List;
 import java.util.prefs.Preferences;
 
-import org.hafotzastehillim.spreadsheet.Column;
-import org.hafotzastehillim.spreadsheet.Entry;
-import org.hafotzastehillim.spreadsheet.Search;
-import org.hafotzastehillim.spreadsheet.Spreadsheet;
-import org.hafotzastehillim.spreadsheet.Tab;
+import org.hafotzastehillim.fx.spreadsheet.Column;
+import org.hafotzastehillim.fx.spreadsheet.Entry;
+import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
+import org.hafotzastehillim.fx.spreadsheet.Tab;
+import org.hafotzastehillim.fx.util.Search;
+import org.hafotzastehillim.fx.util.Util;
 
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
@@ -126,7 +127,7 @@ public class View extends VBox {
 		searchPath.setId("search-icon");
 		searchButton.setGraphic(searchPath);
 
-		query.setOnAction(evt -> model.getSpreadsheet().search(query.getText(), resultList, Search.getMatcher(),
+		query.setOnAction(evt -> model.getSpreadsheet().searchEntries(query.getText(), resultList, Search.getMatcher(),
 				Search.getColumns()));
 		searchButton.setOnAction(query.getOnAction());
 

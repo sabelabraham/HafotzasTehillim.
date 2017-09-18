@@ -1,4 +1,4 @@
-package org.hafotzastehillim.spreadsheet;
+package org.hafotzastehillim.fx.spreadsheet;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -6,8 +6,8 @@ import java.util.List;
 
 public enum Tab {
 
-	WILLIAMSBURG("וויליאמסבורג"), BORO_PARK("בארא פארק"), NEW_SQUARE("סקווירא"), MONROE("קרית יואל"), MONSEY(
-			"מאנסי"), OTHER_CITIES("others"), SHAVUOS("שבועות");
+	WILLIAMSBURG("ווילי�?מסבורג"), BORO_PARK("ב�?ר�? פ�?רק"), NEW_SQUARE("סקוויר�?"), MONROE("קרית יו�?ל"), MONSEY(
+			"מ�?נסי"), OTHER_CITIES("others"), SHAVUOS("שבועות");
 
 	private String name;
 
@@ -17,15 +17,15 @@ public enum Tab {
 
 	public static Tab getTab(String str) {
 		switch (str) {
-		case "וויליאמסבורג":
+		case "ווילי�?מסבורג":
 			return WILLIAMSBURG;
-		case "בארא פארק":
+		case "ב�?ר�? פ�?רק":
 			return BORO_PARK;
-		case "סקווירא":
+		case "סקוויר�?":
 			return NEW_SQUARE;
-		case "קרית יואל":
+		case "קרית יו�?ל":
 			return MONROE;
-		case "מאנסי":
+		case "מ�?נסי":
 			return MONSEY;
 		case "others":
 			return OTHER_CITIES;

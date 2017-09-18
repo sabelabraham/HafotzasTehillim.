@@ -1,4 +1,4 @@
-package org.hafotzastehillim.fx;
+package org.hafotzastehillim.fx.util;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;

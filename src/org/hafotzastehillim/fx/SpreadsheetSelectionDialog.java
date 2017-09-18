@@ -7,10 +7,11 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.apache.poi.openxml4j.exceptions.InvalidFormatException;
-import org.hafotzastehillim.spreadsheet.GoogleSpreadsheet;
-import org.hafotzastehillim.spreadsheet.LocalSpreadsheet;
-import org.hafotzastehillim.spreadsheet.SheetsAPI;
-import org.hafotzastehillim.spreadsheet.Spreadsheet;
+import org.hafotzastehillim.fx.spreadsheet.GoogleSpreadsheet;
+import org.hafotzastehillim.fx.spreadsheet.LocalSpreadsheet;
+import org.hafotzastehillim.fx.spreadsheet.SheetsAPI;
+import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
+import org.hafotzastehillim.fx.util.Util;
 
 import com.google.api.client.extensions.jetty.auth.oauth2.LocalServerReceiver;
 import com.google.api.services.sheets.v4.Sheets;

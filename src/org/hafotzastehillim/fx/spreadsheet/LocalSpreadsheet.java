@@ -1,6 +1,6 @@
-package org.hafotzastehillim.spreadsheet;
+package org.hafotzastehillim.fx.spreadsheet;
 
-import static org.hafotzastehillim.spreadsheet.SearchType.ENTRY_LIST;
+import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY_LIST;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -22,6 +22,7 @@ import org.apache.poi.ss.usermodel.Sheet;
 import org.apache.poi.ss.usermodel.Workbook;
 import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hafotzastehillim.fx.Main;
+import org.hafotzastehillim.fx.util.Search;
 
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
@@ -150,7 +151,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void search(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
+	public void searchEntries(String q, ObservableList<? super Entry> consumer, ColumnMatcher matcher, Column... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -173,7 +174,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findFirst(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher,
+	public void findEntry(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher,
 			Column... columns) {
 		throw new UnsupportedOperationException();
 	}

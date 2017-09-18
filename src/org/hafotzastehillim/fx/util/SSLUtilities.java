@@ -1,4 +1,4 @@
-package org.hafotzastehillim.fx;
+package org.hafotzastehillim.fx.util;
 
 import java.security.GeneralSecurityException;
 import java.security.SecureRandom;

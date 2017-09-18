@@ -1,6 +1,6 @@
 package org.hafotzastehillim.fx;
 
-import org.hafotzastehillim.spreadsheet.Entry;
+import org.hafotzastehillim.fx.spreadsheet.Entry;
 
 import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Pos;
