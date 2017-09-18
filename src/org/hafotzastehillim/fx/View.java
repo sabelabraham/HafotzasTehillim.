@@ -1,7 +1,5 @@
 package org.hafotzastehillim.fx;
 
-import java.io.File;
-import java.util.List;
 import java.util.prefs.Preferences;
 
 import org.hafotzastehillim.fx.spreadsheet.Column;
@@ -11,11 +9,7 @@ import org.hafotzastehillim.fx.spreadsheet.Tab;
 import org.hafotzastehillim.fx.util.Search;
 import org.hafotzastehillim.fx.util.Util;
 
-import com.google.i18n.phonenumbers.PhoneNumberUtil;
-import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 import com.jfoenix.controls.JFXButton;
-import com.jfoenix.controls.JFXSnackbar;
-import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 import com.jfoenix.controls.JFXTextField;
 
 import javafx.animation.PauseTransition;
@@ -30,12 +24,10 @@ import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
-import javafx.concurrent.Task;
 import javafx.concurrent.Worker.State;
 import javafx.geometry.Insets;
 import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
-import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
@@ -127,8 +119,8 @@ public class View extends VBox {
 		searchPath.setId("search-icon");
 		searchButton.setGraphic(searchPath);
 
-		query.setOnAction(evt -> model.getSpreadsheet().searchEntries(query.getText(), resultList, Search.getMatcher(),
-				Search.getColumns()));
+		query.setOnAction(evt -> model.getSpreadsheet().searchEntries(query.getText().toLowerCase().replace(" ", ""),
+				resultList, Search.getMatcher(), Search.getColumns()));
 		searchButton.setOnAction(query.getOnAction());
 
 		Util.circleClip(searchButton);
@@ -321,6 +313,7 @@ public class View extends VBox {
 
 		HBox.setHgrow(searchPane, Priority.ALWAYS);
 		searchPane.disableProperty().bind(model.spreadsheetProperty().isNull().or(refresh.mouseTransparentProperty()));
+		newMember.disableProperty().bind(searchPane.disabledProperty());
 
 		Pane snackbarSpace = new Pane();
 		snackbarSpace.setMinHeight(30);
@@ -353,6 +346,9 @@ public class View extends VBox {
 
 		refresh.mouseTransparentProperty().unbind();
 		graphics.refreshingProperty().unbind();
+
+		s.loadService().setOnScheduled(null);
+		s.loadService().setOnSucceeded(null);
 	}
 
 	private void setupSpreadsheet(Spreadsheet s) {
@@ -361,9 +357,8 @@ public class View extends VBox {
 
 		resultListView.setCellFactory(lv -> new EntryCell(7, Bindings.size(resultList)));
 
-		refresh.mouseTransparentProperty().bind(s.loadService().runningProperty());
+		refresh.mouseTransparentProperty().bind(s.loadService().stateProperty().isNotEqualTo(State.SUCCEEDED));
 		s.loadService().setOnScheduled(evt -> resultList.clear());
-		s.searchService().setOnScheduled(evt -> resultList.clear());
 
 		s.searchService().setOnSucceeded(evt -> {
 			resultListView.requestFocus();
