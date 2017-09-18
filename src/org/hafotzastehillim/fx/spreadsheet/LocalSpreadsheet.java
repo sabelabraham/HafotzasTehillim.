@@ -2,6 +2,7 @@ package org.hafotzastehillim.fx.spreadsheet;
 
 import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY;
 import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY_LIST;
+import static org.hafotzastehillim.fx.spreadsheet.SearchType.ROW_IN_TAB;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -43,6 +44,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 	private Service<Void> load;
 
 	private volatile String query;
+	private volatile int searchTab;
 	private volatile ObservableList<? super Entry> consumerList;
 	private volatile WritableValue<? super Entry> consumerRef;
 	private volatile WritableIntegerValue consumerRow;
@@ -175,14 +177,50 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findEntry(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
-		throw new UnsupportedOperationException();
+	public void findEntry(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
+		if (q == null || q.isEmpty())
+			return;
+
+		if (q.equals(query))
+			return;
+
+		if (load.isRunning())
+			return;
+
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		consumerRef = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = ENTRY;
+
+		search.restart();
 	}
 
 	@Override
-	public void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher,
-			int... columns) {
-		throw new UnsupportedOperationException();
+	public void findRowInTab(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns) {
+		if (q == null || q.isEmpty())
+			return;
+
+		if (q.equals(query))
+			return;
+
+		if (load.isRunning())
+			return;
+
+		if (search.isRunning())
+			search.cancel();
+
+		query = q;
+		searchTab = tab;
+		consumerRow = consumer;
+		this.matcher = matcher;
+		this.columns = columns;
+		type = ROW_IN_TAB;
+
+		search.restart();
 	}
 
 	public Task<Void> saveTask() {
@@ -237,42 +275,65 @@ public class LocalSpreadsheet implements Spreadsheet {
 				protected Task<Void> createTask() {
 					return new Task<Void>() {
 
+						private List<? super Entry> list = consumerList;
+						private WritableValue<? super Entry> ref = consumerRef;
+						private WritableIntegerValue rowInTab = consumerRow;
+						private int sTab = searchTab;
+
 						@Override
 						protected Void call() throws Exception {
-							if (type != SearchType.ENTRY_LIST)
-								return null;
-
-							consumerList.clear();
-
 							String q = query;
 							ColumnMatcher m = matcher;
 							int[] c = columns;
 
-							int size = Math.min(workbook.getNumberOfSheets(), Tab.cities().size());
+							if (type == ENTRY_LIST || type == ENTRY) {
+								consumerList.clear();
 
-							outer: for (int i = 0; i < size; i++) {
-								Sheet sheet = workbook.getSheetAt(i);
-								if (sheet == null)
-									continue;
+								int size = Math.min(workbook.getNumberOfSheets(), Tab.cities().size());
+
+								outer: for (int i = 0; i < size; i++) {
+									Sheet sheet = workbook.getSheetAt(i);
+									if (sheet == null)
+										continue;
+
+									for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
+
+										if (isCancelled())
+											break outer;
+
+										Row row = sheet.getRow(j);
+										if (row == null)
+											continue;
+
+										if (Search.matches(LocalSpreadsheet.this, i, j, q, m, c)) {
+
+											found(i, j);
+
+											if (type == ENTRY)
+												break outer;
+										}
+
+									}
+								}
+							} else if (type == ROW_IN_TAB) {
+								Sheet sheet = workbook.getSheetAt(sTab);
 
 								for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
 
 									if (isCancelled())
-										break outer;
+										break;
 
 									Row row = sheet.getRow(j);
 									if (row == null)
 										continue;
 
-									if (Search.matches(LocalSpreadsheet.this, i, j, q, m, c)) {
-
-										found(i, j);
-
-										if (type == ENTRY)
-											break outer;
+									if (Search.matches(LocalSpreadsheet.this, sTab, j, q, m, c)) {
+										rowInTab.set(j);
+										break;
 									}
 
 								}
+
 							}
 
 							return null;
@@ -283,9 +344,9 @@ public class LocalSpreadsheet implements Spreadsheet {
 								Entry e = new Entry(LocalSpreadsheet.this, sheet, row);
 
 								if (type == ENTRY_LIST)
-									consumerList.add(e);
+									list.add(e);
 								else
-									consumerRef.setValue(e);
+									ref.setValue(e);
 							});
 						}
 
