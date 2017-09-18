@@ -6,8 +6,13 @@ import java.util.List;
 
 public enum Tab {
 
-	WILLIAMSBURG("ווילי�?מסבורג"), BORO_PARK("ב�?ר�? פ�?רק"), NEW_SQUARE("סקוויר�?"), MONROE("קרית יו�?ל"), MONSEY(
-			"מ�?נסי"), OTHER_CITIES("others"), SHAVUOS("שבועות");
+	WILLIAMSBURG("\u05d5\u05d5\u05d9\u05dc\u05d9\u05d0\u05de\u05e1\u05d1\u05d5\u05e8\u05d2"), //
+	BORO_PARK("\u05d1\u05d0\u05e8\u05d0 \u05e4\u05d0\u05e8\u05e7"), //
+	NEW_SQUARE("\u05e1\u05e7\u05d5\u05d5\u05d9\u05e8\u05d0"), //
+	MONROE("\u05e7\u05e8\u05d9\u05ea \u05d9\u05d5\u05d0\u05dc"), //
+	MONSEY("\u05de\u05d0\u05e0\u05e1\u05d9"), //
+	OTHER_CITIES("others"), //
+	SHAVUOS("\u05e9\u05d1\u05d5\u05e2\u05d5\u05ea");
 
 	private String name;
 
@@ -17,19 +22,19 @@ public enum Tab {
 
 	public static Tab getTab(String str) {
 		switch (str) {
-		case "ווילי�?מסבורג":
+		case "\u05d5\u05d5\u05d9\u05dc\u05d9\u05d0\u05de\u05e1\u05d1\u05d5\u05e8\u05d2":
 			return WILLIAMSBURG;
-		case "ב�?ר�? פ�?רק":
+		case "\u05d1\u05d0\u05e8\u05d0 \u05e4\u05d0\u05e8\u05e7":
 			return BORO_PARK;
-		case "סקוויר�?":
+		case "\u05e1\u05e7\u05d5\u05d5\u05d9\u05e8\u05d0":
 			return NEW_SQUARE;
-		case "קרית יו�?ל":
+		case "\u05e7\u05e8\u05d9\u05ea \u05d9\u05d5\u05d0\u05dc":
 			return MONROE;
-		case "מ�?נסי":
+		case "\u05de\u05d0\u05e0\u05e1\u05d9":
 			return MONSEY;
 		case "others":
 			return OTHER_CITIES;
-		case "שבועות":
+		case "\u05e9\u05d1\u05d5\u05e2\u05d5\u05ea":
 			return SHAVUOS;
 		default:
 			return valueOf(str);
