@@ -4,6 +4,7 @@ import static org.hafotzastehillim.fx.spreadsheet.Column.ADDRESS_NAME;
 import static org.hafotzastehillim.fx.spreadsheet.Column.ADDRESS_NUMBER;
 import static org.hafotzastehillim.fx.spreadsheet.Column.LAST_NAME;
 import static org.hafotzastehillim.fx.spreadsheet.Column.LAST_NAME_YIDDISH;
+import static org.hafotzastehillim.fx.spreadsheet.Column.MEMBER_ID;
 import static org.hafotzastehillim.fx.spreadsheet.Column.PHONE;
 
 import java.util.List;
@@ -42,6 +43,9 @@ public class Search {
 				if (col == PHONE.getColumn()) {
 					return value.endsWith(query);
 				}
+				if (col == MEMBER_ID.getColumn()) {
+					return value.equals(query);
+				}
 				if (col == ADDRESS_NUMBER.getColumn()) {
 					addressNumber = value;
 					return false;
@@ -64,7 +68,7 @@ public class Search {
 
 	}
 
-	private static final int[] searchableColumns = new int[] { PHONE.getColumn(), ADDRESS_NUMBER.getColumn(),
+	private static final int[] searchableColumns = new int[] { PHONE.getColumn(), MEMBER_ID.getColumn(), ADDRESS_NUMBER.getColumn(),
 			ADDRESS_NAME.getColumn(), LAST_NAME.getColumn(), LAST_NAME_YIDDISH.getColumn() };
 
 	public static int[] getColumns() {
