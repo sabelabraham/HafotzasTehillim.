@@ -98,7 +98,7 @@ public class SpreadsheetSelectionDialog extends Stage {
 				.add(getClass().getResource("/resources/css/spreadsheet-selection-dialog.css").toExternalForm());
 
 		local = new JFXRadioButton("Load local file");
-		local.setDisable(true); // FIXME
+//		local.setDisable(true); // FIXME
 		google = new JFXRadioButton("Connect to Google Sheets");
 
 		ToggleGroup group = new ToggleGroup();
