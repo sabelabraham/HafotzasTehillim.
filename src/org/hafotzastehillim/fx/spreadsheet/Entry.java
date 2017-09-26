@@ -25,6 +25,8 @@ public class Entry {
 	private Spreadsheet sheet;
 	private int tab = -1;
 	private int row = -1;
+	private int shavuosRow = -1;
+	private int giftsRow = -1;
 
 	private StringProperty id;
 	private StringProperty gender;
@@ -45,11 +47,17 @@ public class Entry {
 	private StringProperty cityYiddish;
 
 	private ObservableList<Integer> points;
+	private ObservableList<Integer> shavuosData;
+	private ObservableList<Boolean> giftsReceived;
+	
 	private ReadOnlyIntegerWrapper total;
 	private ReadOnlyBooleanWrapper detailsChanged;
 
 	private Entry() {
 		points = FXCollections.observableArrayList();
+		shavuosData = FXCollections.observableArrayList();
+		giftsReceived = FXCollections.observableArrayList();
+		
 		total = new ReadOnlyIntegerWrapper();
 
 		points.addListener((ListChangeListener.Change<? extends Integer> change) -> {
@@ -472,6 +480,22 @@ public class Entry {
 	public void setRow(int r) {
 		row = r;
 	}
+	
+	public int getShavuosRow() {
+		return shavuosRow;
+	}
+	
+	public void setShavuosRow(int row) {
+		shavuosRow = row;
+	}
+	
+	public int getGiftsRow() {
+		return giftsRow;
+	}
+	
+	public void setGiftsRow(int row) {
+		giftsRow = row;
+	}
 
 	public ObservableList<Integer> getPoints() {
 		return points;
@@ -509,6 +533,44 @@ public class Entry {
 			return points.get(index);
 
 		return 0;
+	}
+	
+	public ObservableList<Integer> getShavuosData() {
+		return shavuosData;
+	}
+	
+	private void setShavuosData(List<Integer> data) {
+		shavuosData.setAll(data);
+	}
+	
+	public void putShavuosData(int index, int data) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public int getShavuosData(int index) {
+		if(index < shavuosData.size())
+			return shavuosData.get(index);
+		
+		return 0;
+	}
+	
+	public ObservableList<Boolean> getGiftsReceived() {
+		return giftsReceived;
+	}
+	
+	private void setShavuosDataGiftsReceived(List<Boolean> data) {
+		giftsReceived.setAll(data);
+	}
+	
+	public void putGiftReceived(int index, boolean data) {
+		throw new UnsupportedOperationException();
+	}
+	
+	public boolean isGiftRecieved(int index) {
+		if(index < giftsReceived.size())
+			return giftsReceived.get(index);
+		
+		return false;
 	}
 
 	public ReadOnlyIntegerProperty totalProperty() {
