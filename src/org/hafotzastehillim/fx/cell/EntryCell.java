@@ -1,4 +1,4 @@
-package org.hafotzastehillim.fx;
+package org.hafotzastehillim.fx.cell;
 
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 

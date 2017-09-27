@@ -1,15 +1,15 @@
-package org.hafotzastehillim.fx;
+package org.hafotzastehillim.fx.cell;
 
-class PointEditorData {
+public class EditorData<T> {
 
-	private int value;
+	private T value;
 	private boolean changed;
 
-	public PointEditorData(int value) {
+	public EditorData(T value) {
 		this.value = value;
 	}
 
-	public void setValue(int newValue) {
+	public void setValue(T newValue) {
 		if(value == newValue)
 			return;
 
@@ -17,7 +17,7 @@ class PointEditorData {
 		changed = true;
 	}
 
-	public int getValue() {
+	public T getValue() {
 		return value;
 	}
 
@@ -26,6 +26,6 @@ class PointEditorData {
 	}
 
 	public String toString() {
-		return value == 0 ? "" : "" + value;
+		return value == null ? "" : "" + value;
 	}
 }
