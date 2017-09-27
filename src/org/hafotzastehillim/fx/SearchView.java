@@ -29,12 +29,14 @@ import javafx.concurrent.Worker.State;
 import javafx.geometry.Insets;
 import javafx.geometry.Point3D;
 import javafx.geometry.Pos;
+import javafx.scene.Group;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.image.ImageView;
 import javafx.scene.layout.AnchorPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
@@ -48,17 +50,20 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
-public class View extends VBox {
+public class SearchView extends VBox {
 
 	private Model model;
 
 	private JFXTextField query;
+	private String queryString;
 	private JFXButton searchButton;
 
 	private JFXButton refresh;
 	private Refresh graphics;
 	private JFXButton connect;
 	private JFXButton newMember;
+	private JFXButton report;
+	private JFXButton gift;
 	private HBox topBar;
 
 	private ListView<Entry> resultListView;
@@ -78,10 +83,10 @@ public class View extends VBox {
 
 	private Transition searchTransition;
 
-	private static final Preferences prefs = Preferences.userNodeForPackage(View.class);
+	private static final Preferences prefs = Preferences.userNodeForPackage(SearchView.class);
 	private static final String CAMPAIGN_INDEX_KEY = "CampaignIndex";
 
-	public View() {
+	public SearchView() {
 		resultList = FXCollections.observableArrayList();
 
 		model = Model.getInstance();
@@ -90,8 +95,8 @@ public class View extends VBox {
 			setupSpreadsheet(nv);
 		});
 
-		getStyleClass().add("view");
-		getStylesheets().add(getClass().getResource("/resources/css/view.css").toExternalForm());
+		getStyleClass().add("search-view");
+		getStylesheets().add(getClass().getResource("/resources/css/search-view.css").toExternalForm());
 
 		AnchorPane searchPane = new AnchorPane();
 
@@ -99,10 +104,7 @@ public class View extends VBox {
 		query.setFont(Font.font(20));
 		query.setId("search-field");
 		query.setPromptText("Search");
-		query.focusedProperty().addListener((obs, ov, nv) -> {
-			if (nv)
-				Platform.runLater(() -> query.selectAll());
-		});
+		Util.selectOnFocus(query);
 
 		searchPane.disabledProperty().addListener((obs, ov, nv) -> {
 			if (!nv) {
@@ -121,8 +123,14 @@ public class View extends VBox {
 		searchPath.setId("search-icon");
 		searchButton.setGraphic(searchPath);
 
-		query.setOnAction(evt -> model.getSpreadsheet().searchEntries(query.getText().toLowerCase().replace(" ", ""),
-				resultList, Search.getMatcher(), Search.getColumns()));
+		query.setOnAction(evt -> {
+			if (query.getText().equals(queryString))
+				return;
+
+			queryString = query.getText();
+			model.getSpreadsheet().searchEntries(query.getText().toLowerCase().replace(" ", ""), resultList,
+					Search.getMatcher(), Search.getColumns());
+		});
 		searchButton.setOnAction(query.getOnAction());
 
 		Util.circleClip(searchButton);
@@ -164,16 +172,41 @@ public class View extends VBox {
 		refresh.setOnAction(evt -> model.getSpreadsheet().reload());
 
 		connect = new JFXButton();
-		SVGPath g = new SVGPath();
-		g.setContent("M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-"
+		SVGPath connectPath = new SVGPath();
+		connectPath.setContent("M19 3H5c-1.1 0-2 .9-2 2v14c0 1.1.9 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zM9 17H7v-"
 				+ "7h2v7zm4 0h-2V7h2v10zm4 0h-2v-4h2v4z");
-		connect.setGraphic(g);
+		connect.setGraphic(connectPath);
 		connect.setOnAction(evt -> showSpreadsheetDialog());
-		g.setFill(Color.GRAY);
+		connectPath.setFill(Color.GRAY);
 
-		newMember = new JFXButton("\u2795");
-		newMember.setId("new-member-button");
+		newMember = new JFXButton();
+		SVGPath newMemberPath = new SVGPath();
+		newMemberPath.setContent("M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z");
+		newMemberPath.setFill(Color.GRAY);
+		newMember.setGraphic(newMemberPath);
 		newMember.setOnAction(evt -> DetailsPane.showNewDialog());
+
+		report = new JFXButton();
+		SVGPath reportPath = new SVGPath();
+		reportPath.setContent("M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.34.07.52 0 1.1-.9 2-2"
+				+ " 2s-2-.9-2-2c0-.18.02-.36.07-.52l-2.55-2.55c-.16.05-.34.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05."
+				+ "16.07.33.07.51 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.18 0 .35.02.51.07l4.56-4.55C8.02 9.36 8 9.18 8 9"
+				+ "c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.36-.07.52l2.55 2.55c.16-.05.34-.07.52-.07s.36.02.52.07l3.55-3.56"
+				+ "C19.02 8.35 19 8.18 19 8c0-1.1.9-2 2-2s2 .9 2 2z");
+		reportPath.setFill(Color.GRAY);
+		report.setGraphic(reportPath);
+		report.disableProperty().bind(newMember.disabledProperty());
+
+		gift = new JFXButton();
+		SVGPath giftPath = new SVGPath();
+		giftPath.setContent("M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3" + "-3-3-1.05 0-1.96.54-2.5 1.35l"
+				+ "-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99"
+				+ " 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 "
+				+ "1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4"
+				+ "V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z");
+		gift.setGraphic(giftPath);
+		giftPath.setFill(Color.GRAY);
+		gift.disableProperty().bind(newMember.disabledProperty());
 
 		resultListView = new ListView<>();
 		resultListView.setItems(resultList);
@@ -188,11 +221,7 @@ public class View extends VBox {
 			prefs.putInt(CAMPAIGN_INDEX_KEY, nv);
 		});
 
-		// hack for committing on focus lose
-		TextFormatter<Integer> currentCampaignFmt = new TextFormatter<>(
-				currentCampaign.getValueFactory().getConverter(), currentCampaign.getValue());
-		currentCampaign.getEditor().setTextFormatter(currentCampaignFmt);
-		currentCampaign.getValueFactory().valueProperty().bindBidirectional(currentCampaignFmt.valueProperty());
+		Util.commitOnFocusLose(currentCampaign);
 
 		HBox campaignLabelAndSpinner = new HBox(campaignLabel, currentCampaign);
 		campaignLabelAndSpinner.setPadding(new Insets(15));
@@ -268,10 +297,8 @@ public class View extends VBox {
 			return change;
 		}));
 		points.setOnAction(saveButton.getOnAction());
-		points.focusedProperty().addListener((obs, ov, nv) -> {
-			if (nv)
-				Platform.runLater(() -> points.selectAll());
-		});
+		Util.selectOnFocus(points);
+
 		selected.addListener((obs, ov, nv) -> {
 			Entry value = selected.get();
 			if (value == null) {
@@ -330,15 +357,25 @@ public class View extends VBox {
 		snackbarSpace.setMinHeight(30);
 		snackbarSpace.setId("snackbar");
 
-		topBar = new HBox(newMember, connect, refresh);
+		Pane space = new Pane();
+		HBox.setHgrow(space, Priority.ALWAYS);
+		topBar = new HBox(report, gift, connect, refresh, space, newMember);
 		topBar.setAlignment(Pos.CENTER_RIGHT);
 		topBar.setId("top-bar");
 		topBar.setMinHeight(30);
+		topBar.setPadding(new Insets(0, 10, 10, 10));
 
 		getChildren().addAll(topBar, searchPane, bottom, snackbarSpace);
 
 		dialog = new SpreadsheetSelectionDialog();
 		model.setSpreadsheet(dialog.getSpreadsheet());
+
+		// removes rippler for first button while loading
+		sceneProperty().addListener((obs, ov, nv) -> {
+			if (nv != null) {
+				nv.getRoot().requestFocus();
+			}
+		});
 	}
 
 	private StringBinding column(ObservableValue<Entry> entry, Column column) {

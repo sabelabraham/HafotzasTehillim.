@@ -1,4 +1,4 @@
-.view {
+.search-view {
 	-fx-padding: 15.0;
 }
 
@@ -38,8 +38,8 @@
 	-fx-background-radius: 7.0;
 }
 
-#new-member-button {
-	-fx-text-fill: gray;
+.refresh .icon{
+	-fx-fill: gray;
 }
 
 #search-field-pane {

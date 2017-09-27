@@ -1,5 +1,7 @@
 package org.hafotzastehillim.fx.cell;
 
+import org.hafotzastehillim.fx.Main;
+
 import javafx.application.Platform;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
@@ -39,7 +41,7 @@ public class ShavuosEditorCell extends ListCell<EditorData<Integer>> {
 		});
 
 		HBox content = new HBox(10);
-		content.getChildren().addAll(new Label("Shavuos " + (getIndex() + 2017)), field);
+		content.getChildren().addAll(new Label("Shavuos " + (getIndex() + Main.FIRST_SHAVUOS_YEAR)), field);
 		content.setAlignment(Pos.BASELINE_CENTER);
 		setAlignment(Pos.BASELINE_CENTER);
 		setGraphic(content);

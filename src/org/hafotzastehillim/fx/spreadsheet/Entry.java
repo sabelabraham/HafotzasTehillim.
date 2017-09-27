@@ -441,7 +441,7 @@ public class Entry {
 				phone = util.format(util.parse(phone, "US"), PhoneNumberFormat.NATIONAL);
 				data.set(Column.PHONE.getColumn(), phone);
 			} catch (NumberParseException e) {
-				e.printStackTrace();
+				System.err.println(e.getMessage());
 			}
 		}
 

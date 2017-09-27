@@ -24,11 +24,15 @@ import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import javafx.application.Application;
 import javafx.application.Platform;
+import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
 public class Main extends Application {
+	public static final int FIRST_SHAVUOS_YEAR = 2017;
 
 	public volatile static boolean running;
 	private static Application app;
@@ -58,10 +62,10 @@ public class Main extends Application {
 	public void start(Stage primaryStage) throws Exception {
 		app = this;
 
-		View view = new View();
-		snackbar = new JFXSnackbar(view);
+		SearchView searchView = new SearchView();
+		snackbar = new JFXSnackbar(searchView);
 
-		Scene s = new Scene(view);
+		Scene s = new Scene(searchView);
 
 		s.getStylesheets().add(getClass().getResource("/resources/css/root.css").toExternalForm());
 
@@ -71,7 +75,7 @@ public class Main extends Application {
 		primaryStage.show();
 
 		if (Model.getInstance().getSpreadsheet() == null) // might be loaded as last connection
-			view.showSpreadsheetDialog();
+			searchView.showSpreadsheetDialog();
 		if (Model.getInstance().getSpreadsheet() == null) // still didn't select something
 			Platform.exit();
 	}

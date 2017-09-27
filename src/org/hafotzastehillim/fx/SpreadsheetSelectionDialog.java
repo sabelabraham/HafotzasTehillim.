@@ -98,7 +98,7 @@ public class SpreadsheetSelectionDialog extends Stage {
 				.add(getClass().getResource("/resources/css/spreadsheet-selection-dialog.css").toExternalForm());
 
 		local = new JFXRadioButton("Load local file");
-		local.setDisable(true); // Problems with unique id and formula evaluation
+		local.setDisable(true); // Problems with unique id, add and update row, search and formula evaluation
 
 		google = new JFXRadioButton("Connect to Google Sheets");
 

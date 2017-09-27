@@ -153,9 +153,6 @@ public class LocalSpreadsheet implements Spreadsheet {
 		if (q == null || q.isEmpty())
 			return;
 
-		if (q.equals(query))
-			return;
-
 		if (load.isRunning())
 			return;
 
@@ -174,9 +171,6 @@ public class LocalSpreadsheet implements Spreadsheet {
 	@Override
 	public void findEntry(String q, WritableValue<? super Entry> consumer, ColumnMatcher matcher, int... columns) {
 		if (q == null || q.isEmpty())
-			return;
-
-		if (q.equals(query))
 			return;
 
 		if (load.isRunning())
@@ -203,9 +197,6 @@ public class LocalSpreadsheet implements Spreadsheet {
 	@Override
 	public void findRow(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns) {
 		if (q == null || q.isEmpty())
-			return;
-
-		if (q.equals(query))
 			return;
 
 		if (load.isRunning())
@@ -298,7 +289,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 									if (sheet == null)
 										continue;
 
-									for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
+									for (int j = 1; j < sheet.getLastRowNum() + 1; j++) {
 
 										if (isCancelled())
 											break outer;
@@ -320,7 +311,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 							} else if (t == ROW) {
 								Sheet sheet = workbook.getSheetAt(sTab);
 
-								for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
+								for (int j = 1; j < sheet.getLastRowNum() + 1; j++) {
 
 									if (isCancelled())
 										break;

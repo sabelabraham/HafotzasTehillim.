@@ -30,7 +30,10 @@ import javafx.scene.control.CheckBox;
 import javafx.scene.control.DialogPane;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Separator;
+import javafx.scene.control.Spinner;
 import javafx.scene.control.TextArea;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.TextInputControl;
 import javafx.scene.control.Alert.AlertType;
 import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
@@ -45,6 +48,22 @@ import javafx.stage.Modality;
 import javafx.stage.Stage;
 
 public class Util {
+
+	@SuppressWarnings({"rawtypes", "unchecked"})
+	public static void commitOnFocusLose(Spinner spinner) {
+		// hack for committing on focus lose
+		TextFormatter formatter = new TextFormatter(
+				spinner.getValueFactory().getConverter(), spinner.getValue());
+		spinner.getEditor().setTextFormatter(formatter);
+		spinner.getValueFactory().valueProperty().bindBidirectional(formatter.valueProperty());
+	}
+
+	public static void selectOnFocus(TextInputControl text) {
+		text.focusedProperty().addListener((obs, ov, nv) -> {
+			if (nv)
+				Platform.runLater(() -> text.selectAll());
+		});
+	}
 
 	public static Circle circleClip(Region r) {
 		Circle clip = new Circle();

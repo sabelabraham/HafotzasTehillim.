@@ -302,9 +302,6 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		if (q == null || q.isEmpty())
 			return;
 
-		if (q.equals(query))
-			return;
-
 		if (load.isRunning())
 			return;
 
@@ -385,7 +382,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	public int getRow(int tab, String q, ColumnMatcher matcher, int... columns) {
-		for (int row = 0; row < cache.get(tab).size(); row++) {
+		for (int row = 1; row < cache.get(tab).size(); row++) {
 			if (Search.matches(GoogleSpreadsheet.this, tab, row, q, matcher, columns)) {
 				return row;
 			}
@@ -447,7 +444,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 								int size = Math.min(cache.size(), Tab.cities().size());
 
 								outer: for (int i = 0; i < size; i++) {
-									for (int j = 0; j < cache.get(i).size(); j++) {
+									for (int j = 1; j < cache.get(i).size(); j++) {
 										if (isCancelled())
 											break outer;
 
@@ -462,7 +459,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 							} else if (t == ROW_LIST || t == ROW) {
 								Platform.runLater(() -> rList.clear());
 
-								for (int j = 0; j < cache.get(sTab).size(); j++) {
+								for (int j = 1; j < cache.get(sTab).size(); j++) {
 									if (isCancelled())
 										break;
 
