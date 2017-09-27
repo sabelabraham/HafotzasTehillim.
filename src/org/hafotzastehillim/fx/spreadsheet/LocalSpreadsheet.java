@@ -2,7 +2,7 @@ package org.hafotzastehillim.fx.spreadsheet;
 
 import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY;
 import static org.hafotzastehillim.fx.spreadsheet.SearchType.ENTRY_LIST;
-import static org.hafotzastehillim.fx.spreadsheet.SearchType.ROW_IN_TAB;
+import static org.hafotzastehillim.fx.spreadsheet.SearchType.ROW;
 
 import java.io.File;
 import java.io.FileInputStream;
@@ -195,7 +195,13 @@ public class LocalSpreadsheet implements Spreadsheet {
 	}
 
 	@Override
-	public void findRowInTab(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns) {
+	public void searchRows(int tab, String query, ObservableList<Integer> consumer, ColumnMatcher matcher,
+			int... columns) {
+		throw new UnsupportedOperationException();
+	}
+
+	@Override
+	public void findRow(int tab, String q, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns) {
 		if (q == null || q.isEmpty())
 			return;
 
@@ -213,7 +219,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 		consumerRow = consumer;
 		this.matcher = matcher;
 		this.columns = columns;
-		type = ROW_IN_TAB;
+		type = ROW;
 
 		search.restart();
 	}
@@ -274,6 +280,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 						private WritableValue<? super Entry> ref = consumerRef;
 						private WritableIntegerValue rowInTab = consumerRow;
 						private int sTab = searchTab;
+						private SearchType t = type;
 
 						@Override
 						protected Void call() throws Exception {
@@ -281,8 +288,8 @@ public class LocalSpreadsheet implements Spreadsheet {
 							ColumnMatcher m = matcher;
 							int[] c = columns;
 
-							if (type == ENTRY_LIST || type == ENTRY) {
-								consumerList.clear();
+							if (t == ENTRY_LIST || t == ENTRY) {
+								Platform.runLater(() -> consumerList.clear());
 
 								int size = Math.min(workbook.getNumberOfSheets(), Tab.cities().size());
 
@@ -304,13 +311,13 @@ public class LocalSpreadsheet implements Spreadsheet {
 
 											found(i, j);
 
-											if (type == ENTRY)
+											if (t == ENTRY)
 												break outer;
 										}
 
 									}
 								}
-							} else if (type == ROW_IN_TAB) {
+							} else if (t == ROW) {
 								Sheet sheet = workbook.getSheetAt(sTab);
 
 								for (int j = 0; j < sheet.getLastRowNum() + 1; j++) {
@@ -338,7 +345,7 @@ public class LocalSpreadsheet implements Spreadsheet {
 							Platform.runLater(() -> {
 								Entry e = new Entry(LocalSpreadsheet.this, sheet, row);
 
-								if (type == ENTRY_LIST)
+								if (t == ENTRY_LIST)
 									list.add(e);
 								else
 									ref.setValue(e);
@@ -394,4 +401,8 @@ public class LocalSpreadsheet implements Spreadsheet {
 		return load;
 	}
 
+	@Override
+	public int getRow(int tab, String query, ColumnMatcher matcher, int... columns) {
+		throw new UnsupportedOperationException();
+	}
 }

@@ -27,7 +27,11 @@ public interface Spreadsheet {
 
 	void findEntry(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, int... columns);
 
-	void findRowInTab(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns);
+	void searchRows(int tab, String query,  ObservableList<Integer> consumer, ColumnMatcher matcher, int... columns);
+
+	void findRow(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns);
+
+	int getRow(int tab, String query, ColumnMatcher matcher, int... columns);
 
 	Service<Void> searchService();
 
