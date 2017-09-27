@@ -1,10 +1,12 @@
 package org.hafotzastehillim.fx;
 
+import java.awt.im.InputContext;
 import java.util.Arrays;
 import java.util.List;
 import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.spreadsheet.Tab;
+import org.hafotzastehillim.fx.util.EnglishToHebrewKeyInterceptor;
 
 import com.google.i18n.phonenumbers.AsYouTypeFormatter;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
@@ -13,10 +15,12 @@ import com.jfoenix.controls.JFXRadioButton;
 import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleObjectProperty;
 import javafx.beans.value.ChangeListener;
+import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
+import javafx.scene.input.KeyEvent;
 
 public class FormController {
 
@@ -140,6 +144,20 @@ public class FormController {
 			Model.getInstance().getSpreadsheet().findEntry(phone.getText().replaceAll("[^\\d]", ""), consumer,
 					(q, v, c) -> q.equals(v), Column.PHONE.getColumn());
 		});
+
+		phone.sceneProperty().addListener((obs, ov, nv) -> {
+			if(nv != null && entry == null) {
+				phone.requestFocus();
+			}
+		});
+
+		EventHandler<KeyEvent> hebrew = new EnglishToHebrewKeyInterceptor();
+
+		firstNameYiddish.setOnKeyTyped(hebrew);
+		lastNameYiddish.setOnKeyTyped(hebrew);
+		fatherName.setOnKeyTyped(hebrew);
+		school.setOnKeyTyped(hebrew);
+		age.setOnKeyTyped(hebrew);
 	}
 
 	public void setEntry(Entry e) {

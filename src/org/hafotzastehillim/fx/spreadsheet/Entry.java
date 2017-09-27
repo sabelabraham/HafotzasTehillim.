@@ -1,6 +1,7 @@
 package org.hafotzastehillim.fx.spreadsheet;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.stream.Collectors;
@@ -11,10 +12,12 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 
+import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
@@ -22,6 +25,9 @@ import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
 
 public class Entry {
+
+	public static final String CHECKMARK = "\u2713";
+
 	private Spreadsheet sheet;
 	private int tab = -1;
 	private int row = -1;
@@ -49,7 +55,7 @@ public class Entry {
 	private ObservableList<Integer> points;
 	private ObservableList<Integer> shavuosData;
 	private ObservableList<Boolean> giftsReceived;
-	
+
 	private ReadOnlyIntegerWrapper total;
 	private ReadOnlyBooleanWrapper detailsChanged;
 
@@ -57,7 +63,7 @@ public class Entry {
 		points = FXCollections.observableArrayList();
 		shavuosData = FXCollections.observableArrayList();
 		giftsReceived = FXCollections.observableArrayList();
-		
+
 		total = new ReadOnlyIntegerWrapper();
 
 		points.addListener((ListChangeListener.Change<? extends Integer> change) -> {
@@ -78,7 +84,13 @@ public class Entry {
 		this.row = row;
 		this.sheet = sheet;
 
-		reload();
+		loadDetails();
+
+		shavuosRow = sheet.getRow(Tab.SHAVUOS.ordinal(), getId(), (q, v, col) -> q.equals(v), 0);
+		giftsRow = sheet.getRow(Tab.GIFTS.ordinal(), getId(), (q, v, col) -> q.equals(v), 0);
+
+		loadShavuosData();
+		loadGiftsData();
 	}
 
 	public final String getId() {
@@ -238,7 +250,7 @@ public class Entry {
 	}
 
 	public StringProperty idProperty() {
-		if(id == null) {
+		if (id == null) {
 			id = new SimpleStringProperty(this, "id", "");
 			id.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -247,7 +259,7 @@ public class Entry {
 	}
 
 	public StringProperty genderProperty() {
-		if(gender == null) {
+		if (gender == null) {
 			gender = new SimpleStringProperty(this, "gender", "");
 			gender.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -256,7 +268,7 @@ public class Entry {
 	}
 
 	public StringProperty firstNameProperty() {
-		if(firstName == null) {
+		if (firstName == null) {
 			firstName = new SimpleStringProperty(this, "firstName", "");
 			firstName.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -265,7 +277,7 @@ public class Entry {
 	}
 
 	public StringProperty lastNameProperty() {
-		if(lastName == null) {
+		if (lastName == null) {
 			lastName = new SimpleStringProperty(this, "lastName", "");
 			lastName.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -274,7 +286,7 @@ public class Entry {
 	}
 
 	public StringProperty addressNumberProperty() {
-		if(addressNumber == null) {
+		if (addressNumber == null) {
 			addressNumber = new SimpleStringProperty(this, "addressNumber", "");
 			addressNumber.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -283,7 +295,7 @@ public class Entry {
 	}
 
 	public StringProperty addressNameProperty() {
-		if(addressName == null) {
+		if (addressName == null) {
 			addressName = new SimpleStringProperty(this, "addressName", "");
 			addressName.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -292,7 +304,7 @@ public class Entry {
 	}
 
 	public StringProperty aptProperty() {
-		if(apt == null) {
+		if (apt == null) {
 			apt = new SimpleStringProperty(this, "apt", "");
 			apt.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -301,7 +313,7 @@ public class Entry {
 	}
 
 	public StringProperty cityProperty() {
-		if(city == null) {
+		if (city == null) {
 			city = new SimpleStringProperty(this, "city", "");
 			city.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -310,7 +322,7 @@ public class Entry {
 	}
 
 	public StringProperty stateProperty() {
-		if(state == null) {
+		if (state == null) {
 			state = new SimpleStringProperty(this, "state", "");
 			state.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -319,7 +331,7 @@ public class Entry {
 	}
 
 	public StringProperty zipProperty() {
-		if(zip == null) {
+		if (zip == null) {
 			zip = new SimpleStringProperty(this, "zip", "");
 			zip.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -328,7 +340,7 @@ public class Entry {
 	}
 
 	public StringProperty phoneProperty() {
-		if(phone == null) {
+		if (phone == null) {
 			phone = new SimpleStringProperty(this, "phone", "");
 			phone.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -337,7 +349,7 @@ public class Entry {
 	}
 
 	public StringProperty firstNameYiddishProperty() {
-		if(firstNameYiddish == null) {
+		if (firstNameYiddish == null) {
 			firstNameYiddish = new SimpleStringProperty(this, "firstNameYiddish", "");
 			firstNameYiddish.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -346,7 +358,7 @@ public class Entry {
 	}
 
 	public StringProperty lastNameYiddishProperty() {
-		if(lastNameYiddish == null) {
+		if (lastNameYiddish == null) {
 			lastNameYiddish = new SimpleStringProperty(this, "lastNameYiddish", "");
 			lastNameYiddish.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -355,7 +367,7 @@ public class Entry {
 	}
 
 	public StringProperty fatherNameProperty() {
-		if(fatherName == null) {
+		if (fatherName == null) {
 			fatherName = new SimpleStringProperty(this, "fatherName", "");
 			fatherName.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -364,7 +376,7 @@ public class Entry {
 	}
 
 	public StringProperty schoolProperty() {
-		if(school == null) {
+		if (school == null) {
 			school = new SimpleStringProperty(this, "school", "");
 			school.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -373,7 +385,7 @@ public class Entry {
 	}
 
 	public StringProperty ageProperty() {
-		if(age == null) {
+		if (age == null) {
 			age = new SimpleStringProperty(this, "age", "");
 			age.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -382,7 +394,7 @@ public class Entry {
 	}
 
 	public StringProperty cityYiddishProperty() {
-		if(cityYiddish == null) {
+		if (cityYiddish == null) {
 			cityYiddish = new SimpleStringProperty(this, "cityYiddish", "");
 			cityYiddish.addListener((obs, ov, nv) -> detailsChanged.set(true));
 		}
@@ -396,7 +408,23 @@ public class Entry {
 
 	private static final PhoneNumberUtil util = PhoneNumberUtil.getInstance();
 
-	public void reload() {
+	private void loadShavuosData() {
+		if (shavuosRow >= 0) {
+			List<String> data = sheet.getRow(Tab.SHAVUOS.ordinal(), shavuosRow);
+			setShavuosData(
+					data.subList(1, data.size()).stream().map(i -> Integer.parseInt(i)).collect(Collectors.toList()));
+		}
+	}
+
+	private void loadGiftsData() {
+		if (giftsRow >= 0) {
+			List<String> data = sheet.getRow(Tab.GIFTS.ordinal(), giftsRow);
+			setGiftsReceived(data.subList(1, data.size()).stream().map(str -> str.equals(CHECKMARK))
+					.collect(Collectors.toList()));
+		}
+	}
+
+	private void loadDetails() {
 		if (tab == -1) {
 			throw new IllegalStateException("Tab value not set.");
 		}
@@ -418,8 +446,13 @@ public class Entry {
 		}
 
 		setData(data);
-
 		detailsChanged.set(false);
+	}
+
+	public void reload() {
+		loadDetails();
+		loadShavuosData();
+		loadGiftsData();
 	}
 
 	public void saveDetails() {
@@ -480,19 +513,19 @@ public class Entry {
 	public void setRow(int r) {
 		row = r;
 	}
-	
+
 	public int getShavuosRow() {
 		return shavuosRow;
 	}
-	
+
 	public void setShavuosRow(int row) {
 		shavuosRow = row;
 	}
-	
+
 	public int getGiftsRow() {
 		return giftsRow;
 	}
-	
+
 	public void setGiftsRow(int row) {
 		giftsRow = row;
 	}
@@ -534,42 +567,78 @@ public class Entry {
 
 		return 0;
 	}
-	
+
 	public ObservableList<Integer> getShavuosData() {
 		return shavuosData;
 	}
-	
+
 	private void setShavuosData(List<Integer> data) {
 		shavuosData.setAll(data);
 	}
-	
+
 	public void putShavuosData(int index, int data) {
-		throw new UnsupportedOperationException();
+		if (index < shavuosData.size()) {
+			shavuosData.set(index, data);
+		} else {
+			while (index > shavuosData.size()) {
+				shavuosData.add(0);
+			}
+
+			shavuosData.add(data);
+		}
+
+		if (shavuosRow < 0) {
+			shavuosRow = sheet.addRow(Tab.SHAVUOS.ordinal(), Collections.singletonList(getId()));
+		}
+
+		if (data <= 0)
+			sheet.setCellValue(Tab.SHAVUOS.ordinal(), shavuosRow, 1 + index, "");
+		else
+			sheet.setCellValue(Tab.SHAVUOS.ordinal(), shavuosRow, 1 + index, data);
+
 	}
-	
+
 	public int getShavuosData(int index) {
-		if(index < shavuosData.size())
+		if (index < shavuosData.size())
 			return shavuosData.get(index);
-		
+
 		return 0;
 	}
-	
+
 	public ObservableList<Boolean> getGiftsReceived() {
 		return giftsReceived;
 	}
-	
-	private void setShavuosDataGiftsReceived(List<Boolean> data) {
+
+	private void setGiftsReceived(List<Boolean> data) {
 		giftsReceived.setAll(data);
 	}
-	
+
 	public void putGiftReceived(int index, boolean data) {
-		throw new UnsupportedOperationException();
+		if (index < giftsReceived.size()) {
+			giftsReceived.set(index, data);
+		} else {
+			while (index > giftsReceived.size()) {
+				giftsReceived.add(false);
+			}
+
+			giftsReceived.add(data);
+		}
+
+		if (giftsRow < 0) {
+			giftsRow = sheet.addRow(Tab.GIFTS.ordinal(), Collections.singletonList(getId()));
+		}
+
+		if (!data)
+			sheet.setCellValue(Tab.GIFTS.ordinal(), giftsRow, 1 + index, "");
+		else
+			sheet.setCellValue(Tab.GIFTS.ordinal(), giftsRow, 1 + index, CHECKMARK);
+
 	}
-	
+
 	public boolean isGiftRecieved(int index) {
-		if(index < giftsReceived.size())
+		if (index < giftsReceived.size())
 			return giftsReceived.get(index);
-		
+
 		return false;
 	}
 

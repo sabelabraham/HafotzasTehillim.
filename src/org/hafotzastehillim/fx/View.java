@@ -2,6 +2,7 @@ package org.hafotzastehillim.fx;
 
 import java.util.prefs.Preferences;
 
+import org.hafotzastehillim.fx.cell.EntryCell;
 import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
@@ -66,6 +67,7 @@ public class View extends VBox {
 	private Label campaignLabel;
 	private Spinner<Integer> currentCampaign;
 
+	private Text id;
 	private Text name;
 	private Text address;
 	private Text phone;
@@ -199,9 +201,13 @@ public class View extends VBox {
 		ReadOnlyObjectProperty<Entry> selected = resultListView.getSelectionModel().selectedItemProperty();
 		model.currentEntryProperty().bind(selected);
 
+		id = new Text();
 		name = new Text();
 		address = new Text();
 		phone = new Text();
+
+		id.setFill(Color.DODGERBLUE);
+		id.setFont(Font.font("Monospaced", 15));
 
 		details = new JFXButton("Details");
 		details.visibleProperty().bind(Bindings.createBooleanBinding( // FIXME so far we don't support other cities.
@@ -215,19 +221,24 @@ public class View extends VBox {
 		notSupported.visibleProperty().bind(details.visibleProperty().not());
 		notSupported.setTextAlignment(TextAlignment.CENTER);
 
+		id.visibleProperty().bind(selected.isNotNull());
 		name.visibleProperty().bind(selected.isNotNull());
 		address.visibleProperty().bind(selected.isNotNull());
 		phone.visibleProperty().bind(selected.isNotNull());
 
+		id.textProperty().bind(column(selected, Column.ID_NUMBER));
 		name.textProperty()
 				.bind(column(selected, Column.FIRST_NAME).concat(" ").concat(column(selected, Column.LAST_NAME)));
 		address.textProperty().bind(
 				column(selected, Column.ADDRESS_NUMBER).concat(" ").concat(column(selected, Column.ADDRESS_NAME)));
 		phone.textProperty().bind(column(selected, Column.PHONE));
 
-		Separator sep = new Separator();
-		sep.setPadding(new Insets(10, 10, 5, 10));
-		VBox info = new VBox(name, address, phone, sep, new StackPane(details, notSupported));
+		Separator sep1 = new Separator();
+		sep1.setPadding(new Insets(10, 10, 5, 10));
+		Separator sep2 = new Separator();
+		sep2.setPadding(new Insets(10, 10, 5, 10));
+
+		VBox info = new VBox(id, sep1, name, address, phone, sep2, new StackPane(details, notSupported));
 		info.visibleProperty().bind(selected.isNotNull());
 		info.setAlignment(Pos.CENTER);
 		info.setId("info");
