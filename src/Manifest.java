@@ -14,7 +14,7 @@ public class Manifest {
 
 		KeyStore ks = KeyStore.getInstance("JKS");
 
-		try (FileInputStream in = new FileInputStream("D:\\Java\\certs\\.keystore")) {
+		try (FileInputStream in = new FileInputStream("C:\\Users\\Yossel\\workspace\\fxlauncher\\certs\\.keystore")) {
 			ks.load(in, "MM122994".toCharArray());
 		}
 
