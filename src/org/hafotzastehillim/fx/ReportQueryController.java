@@ -2,17 +2,27 @@ package org.hafotzastehillim.fx;
 
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleGroup;
+import javafx.scene.layout.GridPane;
 import javafx.scene.control.TextField;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.Map;
+import java.util.TreeMap;
+
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.util.Util;
 
+import com.jfoenix.controls.JFXButton;
 import com.jfoenix.controls.JFXRadioButton;
+import com.jfoenix.controls.JFXSpinner;
 
 public class ReportQueryController {
 
@@ -80,6 +90,12 @@ public class ReportQueryController {
 	private Spinner<Integer> shavuosFrom;
 	@FXML
 	private Spinner<Integer> shavuosTo;
+	@FXML
+	private GridPane grid;
+	@FXML
+	private JFXButton run;
+	@FXML
+	private JFXSpinner running;
 
 	@FXML
 	public void initialize() {
@@ -124,6 +140,9 @@ public class ReportQueryController {
 		((SpinnerValueFactory.IntegerSpinnerValueFactory) shavuosTo.getValueFactory()).minProperty()
 				.bind(shavuosFrom.valueProperty());
 
+		grid.disableProperty().bind(Model.getInstance().getSpreadsheet().searchService().runningProperty());
+		run.disableProperty().bind(grid.disabledProperty());
+		running.visibleProperty().bind(grid.disabledProperty());
 	}
 
 	@FXML
@@ -177,8 +196,20 @@ public class ReportQueryController {
 
 				return remove;
 			});
-			all.forEach(e -> System.out.println(e.getLastName()));
-			System.out.println(all.size());
+
+			Model.getInstance().getSpreadsheet().searchService().setOnSucceeded(null);
+
+			Map<String, ObservableList<Entry>> map = new LinkedHashMap<>();
+
+			map.put("Test1", all);
+			map.put("Test2", all);
+			map.put("Test3", all);
+			map.put("Test4", all);
+			map.put("Test5", all);
+			map.put("Test6", all);
+
+			ReportResultsView report = new ReportResultsView(map);
+			Util.createDialog(report, "Testing Reports", ButtonType.OK);
 		});
 
 	}

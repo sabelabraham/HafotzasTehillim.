@@ -12,11 +12,13 @@ import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
 
+import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
 import javafx.beans.property.ReadOnlyBooleanWrapper;
 import javafx.beans.property.ReadOnlyIntegerProperty;
 import javafx.beans.property.ReadOnlyIntegerWrapper;
+import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleStringProperty;
 import javafx.beans.property.StringProperty;
@@ -51,6 +53,7 @@ public class Entry {
 	private StringProperty school;
 	private StringProperty age;
 	private StringProperty cityYiddish;
+	private BooleanProperty selected;
 
 	private ObservableList<Integer> points;
 	private ObservableList<Integer> shavuosData;
@@ -177,8 +180,12 @@ public class Entry {
 		return cityYiddishProperty().get();
 	}
 
-	public boolean isDetailsChanged() {
+	public final boolean isDetailsChanged() {
 		return detailsChangedProperty().get();
+	}
+
+	public final boolean isSelected() {
+		return selectedProperty().get();
 	}
 
 	public final void setId(String str) {
@@ -247,6 +254,10 @@ public class Entry {
 
 	public final void setCityYiddish(String str) {
 		cityYiddishProperty().set(str);
+	}
+
+	public final void setSelected(Boolean bool) {
+		selectedProperty().set(bool);
 	}
 
 	public StringProperty idProperty() {
@@ -404,6 +415,14 @@ public class Entry {
 
 	public ReadOnlyBooleanProperty detailsChangedProperty() {
 		return detailsChanged.getReadOnlyProperty();
+	}
+
+	public BooleanProperty selectedProperty() {
+		if (selected == null) {
+			selected = new SimpleBooleanProperty(this, "selected", false);
+		}
+
+		return selected;
 	}
 
 	private static final PhoneNumberUtil util = PhoneNumberUtil.getInstance();

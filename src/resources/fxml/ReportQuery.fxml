@@ -2,6 +2,7 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXRadioButton?>
+<?import com.jfoenix.controls.JFXSpinner?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.Group?>
 <?import javafx.scene.control.Label?>
@@ -13,222 +14,181 @@
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 <?import javafx.scene.layout.StackPane?>
-<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.layout.VBox?>
 
-<GridPane hgap="20.0" maxHeight="-Infinity" maxWidth="-Infinity"
-	minHeight="-Infinity" minWidth="-Infinity" vgap="10.0"
-	xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1"
-	fx:controller="org.hafotzastehillim.fx.ReportQueryController">
-	<columnConstraints>
-		<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
-			prefWidth="100.0" />
-		<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0"
-			prefWidth="100.0" />
-		<ColumnConstraints hgrow="SOMETIMES" maxWidth="266.0"
-			minWidth="10.0" prefWidth="194.0" />
-		<ColumnConstraints hgrow="SOMETIMES" maxWidth="302.0"
-			minWidth="10.0" prefWidth="290.0" />
-	</columnConstraints>
-	<rowConstraints>
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-		<RowConstraints minHeight="10.0" prefHeight="30.0"
-			vgrow="SOMETIMES" />
-	</rowConstraints>
+<VBox xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hafotzastehillim.fx.ReportQueryController">
 	<children>
-		<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="1">
+		<GridPane fx:id="grid" hgap="20.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" vgap="10.0">
+			<columnConstraints>
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="100.0" />
+				<ColumnConstraints hgrow="SOMETIMES" maxWidth="266.0" minWidth="10.0" prefWidth="194.0" />
+				<ColumnConstraints hgrow="SOMETIMES" maxWidth="302.0" minWidth="10.0" prefWidth="290.0" />
+			</columnConstraints>
+			<rowConstraints>
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+				<RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+			</rowConstraints>
 			<children>
-				<Label text="Last Name" />
-			</children>
-		</StackPane>
-		<JFXRadioButton fx:id="lastNameAllToggle" selected="true"
-			text="All" GridPane.columnIndex="1" GridPane.rowIndex="1">
-			<toggleGroup>
-				<ToggleGroup fx:id="lastNameGroup" />
-			</toggleGroup>
-		</JFXRadioButton>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3"
-			GridPane.rowIndex="1">
-			<children>
-				<JFXRadioButton fx:id="lastNameRangeToggle" text="From  "
-					toggleGroup="$lastNameGroup" />
-				<TextField fx:id="lastNameFrom" />
-				<Group>
+				<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="1">
 					<children>
-						<Label text="  To  " />
+						<Label text="Last Name" />
 					</children>
-				</Group>
-				<TextField fx:id="lastNameTo" />
+				</StackPane>
+				<JFXRadioButton fx:id="lastNameAllToggle" selected="true" text="All" GridPane.columnIndex="1" GridPane.rowIndex="1">
+					<toggleGroup>
+						<ToggleGroup fx:id="lastNameGroup" />
+					</toggleGroup>
+				</JFXRadioButton>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="1">
+					<children>
+						<JFXRadioButton fx:id="lastNameRangeToggle" text="From  " toggleGroup="$lastNameGroup" />
+						<TextField fx:id="lastNameFrom" />
+						<Group>
+							<children>
+								<Label text="  To  " />
+							</children>
+						</Group>
+						<TextField fx:id="lastNameTo" />
+					</children>
+				</HBox>
+				<StackPane alignment="CENTER_RIGHT">
+					<children>
+						<Label text="Gender" />
+					</children>
+				</StackPane>
+				<JFXRadioButton fx:id="genderAllToggle" selected="true" text="All" GridPane.columnIndex="1">
+					<toggleGroup>
+						<ToggleGroup fx:id="genderGroup" />
+					</toggleGroup>
+				</JFXRadioButton>
+				<HBox alignment="CENTER_LEFT" spacing="35.0" GridPane.columnIndex="2">
+					<children>
+						<JFXRadioButton fx:id="genderBoyToggle" text="Boy" toggleGroup="$genderGroup" />
+						<JFXRadioButton fx:id="genderGirlToggle" text="Girl" toggleGroup="$genderGroup" />
+					</children>
+					<opaqueInsets>
+						<Insets />
+					</opaqueInsets>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="1">
+					<children>
+						<JFXRadioButton fx:id="lastNameSelectToggle" text="Select  " toggleGroup="$lastNameGroup">
+							<padding>
+								<Insets right="18.0" />
+							</padding>
+						</JFXRadioButton>
+						<TextField fx:id="lastNameSelect" />
+					</children>
+				</HBox>
+				<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="3">
+					<children>
+						<Label text="Total Points" />
+					</children>
+				</StackPane>
+				<JFXRadioButton fx:id="pointsAllToggle" selected="true" text="All" GridPane.columnIndex="1" GridPane.rowIndex="3">
+					<toggleGroup>
+						<ToggleGroup fx:id="pointsGroup" />
+					</toggleGroup>
+				</JFXRadioButton>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="3">
+					<children>
+						<JFXRadioButton fx:id="pointsMinimumToggle" text="Minimum  " toggleGroup="$pointsGroup" />
+						<Spinner fx:id="pointsMinimum" editable="true" max="999999" min="0" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="3">
+					<children>
+						<JFXRadioButton fx:id="pointsRangeToggle" text="From  " toggleGroup="$pointsGroup" />
+						<Spinner fx:id="pointsFrom" editable="true" max="999999" min="0" />
+						<Group>
+							<children>
+								<Label text="  To  " />
+							</children>
+						</Group>
+						<Spinner fx:id="pointsTo" editable="true" max="999999" min="0" />
+					</children>
+				</HBox>
+				<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="2">
+					<children>
+						<Label text="Campaign" />
+					</children>
+				</StackPane>
+				<JFXRadioButton fx:id="campaignAllToggle" selected="true" text="All" GridPane.columnIndex="1" GridPane.rowIndex="2">
+					<toggleGroup>
+						<ToggleGroup fx:id="campaignGroup" />
+					</toggleGroup>
+				</JFXRadioButton>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="2">
+					<children>
+						<JFXRadioButton fx:id="campaignSelectToggle" text="Select  " toggleGroup="$campaignGroup">
+							<padding>
+								<Insets right="19.0" />
+							</padding>
+						</JFXRadioButton>
+						<Spinner fx:id="campaignSelect" editable="true" max="100" min="1" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="2">
+					<children>
+						<JFXRadioButton fx:id="campaignRangeToggle" text="From  " toggleGroup="$campaignGroup" />
+						<Spinner fx:id="campaignFrom" editable="true" max="100" min="1" />
+						<Group>
+							<children>
+								<Label text="  To  " />
+							</children>
+						</Group>
+						<Spinner fx:id="campaignTo" editable="true" max="100" min="1" />
+					</children>
+				</HBox>
+				<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="4">
+					<children>
+						<Label text="Shavuos" />
+					</children>
+				</StackPane>
+				<JFXRadioButton fx:id="shavuosAllToggle" selected="true" text="All" GridPane.columnIndex="1" GridPane.rowIndex="4">
+					<toggleGroup>
+						<ToggleGroup fx:id="shavuosGroup" />
+					</toggleGroup>
+				</JFXRadioButton>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2" GridPane.rowIndex="4">
+					<children>
+						<JFXRadioButton fx:id="shavuosSelectToggle" text="Select  " toggleGroup="$shavuosGroup">
+							<padding>
+								<Insets right="19.0" />
+							</padding>
+						</JFXRadioButton>
+						<Spinner fx:id="shavuosSelect" editable="true" max="2025" min="2017" />
+					</children>
+				</HBox>
+				<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3" GridPane.rowIndex="4">
+					<children>
+						<JFXRadioButton fx:id="shavuosRangeToggle" text="From  " toggleGroup="$shavuosGroup" />
+						<Spinner fx:id="shavuosFrom" editable="true" max="2025" min="2017" />
+						<Group>
+							<children>
+								<Label text="  To  " />
+							</children>
+						</Group>
+						<Spinner fx:id="shavuosTo" editable="true" max="2025" min="2017" />
+					</children>
+				</HBox>
 			</children>
-		</HBox>
+			<padding>
+				<Insets bottom="35.0" left="35.0" right="35.0" top="35.0" />
+			</padding>
+		</GridPane>
 		<StackPane alignment="CENTER_RIGHT">
 			<children>
-				<Label text="Gender" />
+				<JFXButton fx:id="run" buttonType="RAISED" defaultButton="true" graphicTextGap="0.0" onAction="#run" style="-fx-background-color: dodgerblue;" text="Run Report" textFill="WHITE" />
+				<JFXSpinner fx:id="running" StackPane.alignment="CENTER" />
 			</children>
-		</StackPane>
-		<JFXRadioButton fx:id="genderAllToggle" selected="true"
-			text="All" GridPane.columnIndex="1">
-			<toggleGroup>
-				<ToggleGroup fx:id="genderGroup" />
-			</toggleGroup>
-		</JFXRadioButton>
-		<HBox alignment="CENTER_LEFT" spacing="35.0"
-			GridPane.columnIndex="2">
-			<children>
-				<JFXRadioButton fx:id="genderBoyToggle" text="Boy"
-					toggleGroup="$genderGroup" />
-				<JFXRadioButton fx:id="genderGirlToggle" text="Girl"
-					toggleGroup="$genderGroup" />
-			</children>
-			<opaqueInsets>
-				<Insets />
-			</opaqueInsets>
-		</HBox>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2"
-			GridPane.rowIndex="1">
-			<children>
-				<JFXRadioButton fx:id="lastNameSelectToggle" text="Select  "
-					toggleGroup="$lastNameGroup">
-					<padding>
-						<Insets right="18.0" />
-					</padding>
-				</JFXRadioButton>
-				<TextField fx:id="lastNameSelect" />
-			</children>
-		</HBox>
-		<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="3">
-			<children>
-				<Label text="Total Points" />
-			</children>
-		</StackPane>
-		<JFXRadioButton fx:id="pointsAllToggle" selected="true"
-			text="All" GridPane.columnIndex="1" GridPane.rowIndex="3">
-			<toggleGroup>
-				<ToggleGroup fx:id="pointsGroup" />
-			</toggleGroup>
-		</JFXRadioButton>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2"
-			GridPane.rowIndex="3">
-			<children>
-				<JFXRadioButton fx:id="pointsMinimumToggle" text="Minimum  "
-					toggleGroup="$pointsGroup" />
-				<Spinner fx:id="pointsMinimum" editable="true" min="0" max="999999" />
-			</children>
-		</HBox>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3"
-			GridPane.rowIndex="3">
-			<children>
-				<JFXRadioButton fx:id="pointsRangeToggle" text="From  "
-					toggleGroup="$pointsGroup" />
-				<Spinner fx:id="pointsFrom" editable="true" min="0" max="999999" />
-				<Group>
-					<children>
-						<Label text="  To  " />
-					</children>
-				</Group>
-				<Spinner fx:id="pointsTo" editable="true" min="0" max="999999" />
-			</children>
-		</HBox>
-		<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="2">
-			<children>
-				<Label text="Campaign" />
-			</children>
-		</StackPane>
-		<JFXRadioButton fx:id="campaignAllToggle" selected="true"
-			text="All" GridPane.columnIndex="1" GridPane.rowIndex="2">
-			<toggleGroup>
-				<ToggleGroup fx:id="campaignGroup" />
-			</toggleGroup>
-		</JFXRadioButton>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2"
-			GridPane.rowIndex="2">
-			<children>
-				<JFXRadioButton fx:id="campaignSelectToggle" text="Select  "
-					toggleGroup="$campaignGroup">
-					<padding>
-						<Insets right="19.0" />
-					</padding>
-				</JFXRadioButton>
-				<Spinner fx:id="campaignSelect" editable="true" min="1" max="100" />
-			</children>
-		</HBox>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3"
-			GridPane.rowIndex="2">
-			<children>
-				<JFXRadioButton fx:id="campaignRangeToggle" text="From  "
-					toggleGroup="$campaignGroup" />
-				<Spinner fx:id="campaignFrom" editable="true" min="1" max="100" />
-				<Group>
-					<children>
-						<Label text="  To  " />
-					</children>
-				</Group>
-				<Spinner fx:id="campaignTo" editable="true" min="1" max="100" />
-			</children>
-		</HBox>
-		<StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="4">
-			<children>
-				<Label text="Shavuos" />
-			</children>
-		</StackPane>
-		<JFXRadioButton fx:id="shavuosAllToggle" selected="true"
-			text="All" GridPane.columnIndex="1" GridPane.rowIndex="4">
-			<toggleGroup>
-				<ToggleGroup fx:id="shavuosGroup" />
-			</toggleGroup>
-		</JFXRadioButton>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="2"
-			GridPane.rowIndex="4">
-			<children>
-				<JFXRadioButton fx:id="shavuosSelectToggle" text="Select  "
-					toggleGroup="$shavuosGroup">
-					<padding>
-						<Insets right="19.0" />
-					</padding>
-				</JFXRadioButton>
-				<Spinner fx:id="shavuosSelect" editable="true" min="2017"
-					max="2025" />
-			</children>
-		</HBox>
-		<HBox alignment="CENTER_LEFT" GridPane.columnIndex="3"
-			GridPane.rowIndex="4">
-			<children>
-				<JFXRadioButton fx:id="shavuosRangeToggle" text="From  "
-					toggleGroup="$shavuosGroup" />
-				<Spinner fx:id="shavuosFrom" editable="true" min="2017" max="2025" />
-				<Group>
-					<children>
-						<Label text="  To  " />
-					</children>
-				</Group>
-				<Spinner fx:id="shavuosTo" editable="true" min="2017" max="2025" />
-			</children>
-		</HBox>
-		<StackPane alignment="CENTER_RIGHT" GridPane.columnIndex="3"
-			GridPane.rowIndex="6">
-			<children>
-				<JFXButton defaultButton="true" graphicTextGap="0.0"
-					onAction="#run" scaleX="1.3" scaleY="1.3" text=" ">
-					<graphic>
-						<SVGPath
-							content="M10 16.5l6-4.5-6-4.5v9zM12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 18c-4.41 0-8-3.59-8-8s3.59-8 8-8 8 3.59 8 8-3.59 8-8 8z"
-							fill="DODGERBLUE" translateX="2.0" />
-					</graphic>
-				</JFXButton>
-			</children>
+			<VBox.margin>
+				<Insets bottom="40.0" left="40.0" right="40.0" top="40.0" />
+			</VBox.margin>
 		</StackPane>
 	</children>
-	<padding>
-		<Insets bottom="35.0" left="35.0" right="35.0" top="35.0" />
-	</padding>
-</GridPane>
+</VBox>

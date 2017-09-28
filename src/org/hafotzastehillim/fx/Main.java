@@ -1,21 +1,7 @@
 package org.hafotzastehillim.fx;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
 import java.net.InetAddress;
 import java.net.ServerSocket;
-import java.security.KeyManagementException;
-import java.security.NoSuchAlgorithmException;
-import java.security.cert.CertificateException;
-import java.security.cert.X509Certificate;
-import java.util.Arrays;
-
-import javax.net.ssl.HostnameVerifier;
-import javax.net.ssl.HttpsURLConnection;
-import javax.net.ssl.SSLContext;
-import javax.net.ssl.TrustManager;
-import javax.net.ssl.X509TrustManager;
-
 import org.hafotzastehillim.fx.spreadsheet.SheetsAPI;
 import org.hafotzastehillim.fx.util.Util;
 
@@ -27,7 +13,6 @@ import javafx.application.Platform;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.layout.GridPane;
 import javafx.scene.layout.Pane;
 import javafx.stage.Stage;
 
@@ -65,7 +50,8 @@ public class Main extends Application {
 		SearchView searchView = new SearchView();
 		snackbar = new JFXSnackbar(searchView);
 
-		Scene s = new Scene(searchView);
+		Pane p = FXMLLoader.load(getClass().getResource("/resources/fxml/ReportQuery.fxml"));
+		Scene s = new Scene(p);
 
 		s.getStylesheets().add(getClass().getResource("/resources/css/root.css").toExternalForm());
 
