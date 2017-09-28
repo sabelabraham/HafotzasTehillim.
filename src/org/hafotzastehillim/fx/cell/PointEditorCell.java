@@ -1,6 +1,7 @@
 package org.hafotzastehillim.fx.cell;
 
 import javafx.application.Platform;
+import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListCell;
@@ -8,7 +9,11 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 
-public class PointEditorCell extends ListCell<EditorData<Integer>> {
+public class PointEditorCell extends RoundEdgedListCell<EditorData<Integer>> {
+
+	public PointEditorCell(ObservableNumberValue itemSize) {
+		super(itemSize);
+	}
 
 	@Override
 	protected void updateItem(EditorData<Integer> item, boolean empty) {

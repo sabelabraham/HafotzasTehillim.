@@ -12,6 +12,7 @@ import org.hafotzastehillim.fx.util.Util;
 
 import com.jfoenix.controls.JFXButton;
 
+import javafx.beans.binding.Bindings;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -66,7 +67,7 @@ public class DetailsPane extends VBox {
 		}
 
 		ListView<EditorData<Integer>> pointsList = new ListView<>();
-		pointsList.setCellFactory(view -> new PointEditorCell());
+		pointsList.setCellFactory(view -> new PointEditorCell(Bindings.size(pointData)));
 		pointsList.setItems(pointData);
 		pointsList.setSelectionModel(new NoSelectionModel<EditorData<Integer>>());
 		pointsList.setPrefHeight(200);
@@ -77,18 +78,22 @@ public class DetailsPane extends VBox {
 		pointsAdd.setId("points-add");
 		pointsAdd.setOnAction(evt -> pointData.add(new EditorData<>(0)));
 
-		VBox pointsPane = new VBox(10);
+		VBox pointsPane = new VBox();
 		HBox pointsHeader = new HBox(15);
 		pointsHeader.getChildren().addAll(pointsLabel, pointsAdd);
 		pointsHeader.setPadding(new Insets(10, 10, 0, 10));
 		pointsHeader.setAlignment(Pos.BASELINE_CENTER);
 
 		Label total = new Label();
-		total.setPadding(new Insets(0, 0, 10, 0));
+		total.setPadding(new Insets(5));
 		if (entry != null)
 			total.setText("Total Points: " + entry.getTotal());
 
-		pointsPane.getChildren().addAll(pointsHeader, pointsList, new StackPane(total));
+		StackPane totalContainer = new StackPane(total);
+		totalContainer.setId("total-container");
+		totalContainer.visibleProperty().bind(total.textProperty().isEmpty().not());
+
+		pointsPane.getChildren().addAll(pointsHeader, pointsList, totalContainer);
 		pointsPane.setId("points-pane");
 
 		// -----------------
@@ -100,7 +105,7 @@ public class DetailsPane extends VBox {
 		}
 
 		ListView<EditorData<Integer>> shavuosList = new ListView<>();
-		shavuosList.setCellFactory(view -> new ShavuosEditorCell());
+		shavuosList.setCellFactory(view -> new ShavuosEditorCell(Bindings.size(shavuosData)));
 		shavuosList.setItems(shavuosData);
 		shavuosList.setSelectionModel(new NoSelectionModel<EditorData<Integer>>());
 		shavuosList.setPrefHeight(200);
@@ -111,7 +116,7 @@ public class DetailsPane extends VBox {
 		shavuosAdd.setId("shavuos-add");
 		shavuosAdd.setOnAction(evt -> shavuosData.add(new EditorData<>(0)));
 
-		VBox shavuosPane = new VBox(10);
+		VBox shavuosPane = new VBox();
 		HBox shavuosHeader = new HBox(15);
 		shavuosHeader.getChildren().addAll(shavuosLabel, shavuosAdd);
 		shavuosHeader.setPadding(new Insets(10, 10, 0, 10));
@@ -134,7 +139,7 @@ public class DetailsPane extends VBox {
 		}
 
 		ListView<EditorData<Boolean>> giftsList = new ListView<>();
-		giftsList.setCellFactory(view -> new GiftEditorCell());
+		giftsList.setCellFactory(view -> new GiftEditorCell(Bindings.size(giftsData)));
 		giftsList.setItems(giftsData);
 		giftsList.setSelectionModel(new NoSelectionModel<EditorData<Boolean>>());
 		giftsList.setPrefHeight(200);
@@ -143,7 +148,7 @@ public class DetailsPane extends VBox {
 		Label giftsLabel = new Label("Gifts");
 		giftsLabel.setPadding(new Insets(4));
 
-		VBox giftsPane = new VBox(10);
+		VBox giftsPane = new VBox();
 		HBox giftsHeader = new HBox(15);
 		giftsHeader.getChildren().addAll(giftsLabel);
 		giftsHeader.setPadding(new Insets(10, 10, 0, 10));
