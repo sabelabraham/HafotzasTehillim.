@@ -50,6 +50,9 @@ import javafx.scene.text.Text;
 import javafx.scene.text.TextAlignment;
 import javafx.util.Duration;
 
+/*
+ * All SVG paths are from Google's Material Design https://material.io/icons
+ */
 public class SearchView extends VBox {
 
 	private Model model;
@@ -188,12 +191,9 @@ public class SearchView extends VBox {
 
 		report = new JFXButton();
 		SVGPath reportPath = new SVGPath();
-		reportPath.setContent("M23 8c0 1.1-.9 2-2 2-.18 0-.35-.02-.51-.07l-3.56 3.55c.05.16.07.34.07.52 0 1.1-.9 2-2"
-				+ " 2s-2-.9-2-2c0-.18.02-.36.07-.52l-2.55-2.55c-.16.05-.34.07-.52.07s-.36-.02-.52-.07l-4.55 4.56c.05."
-				+ "16.07.33.07.51 0 1.1-.9 2-2 2s-2-.9-2-2 .9-2 2-2c.18 0 .35.02.51.07l4.56-4.55C8.02 9.36 8 9.18 8 9"
-				+ "c0-1.1.9-2 2-2s2 .9 2 2c0 .18-.02.36-.07.52l2.55 2.55c.16-.05.34-.07.52-.07s.36.02.52.07l3.55-3.56"
-				+ "C19.02 8.35 19 8.18 19 8c0-1.1.9-2 2-2s2 .9 2 2z");
+		reportPath.setContent("M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z");
 		reportPath.setFill(Color.GRAY);
+		reportPath.setTranslateY(3);
 		report.setGraphic(reportPath);
 		report.disableProperty().bind(newMember.disabledProperty());
 
@@ -364,18 +364,12 @@ public class SearchView extends VBox {
 		topBar.setId("top-bar");
 		topBar.setMinHeight(30);
 		topBar.setPadding(new Insets(0, 10, 10, 10));
+		topBar.getChildren().forEach(n -> n.setFocusTraversable(false));
 
 		getChildren().addAll(topBar, searchPane, bottom, snackbarSpace);
 
 		dialog = new SpreadsheetSelectionDialog();
 		model.setSpreadsheet(dialog.getSpreadsheet());
-
-		// removes rippler for first button while loading
-		sceneProperty().addListener((obs, ov, nv) -> {
-			if (nv != null) {
-				nv.getRoot().requestFocus();
-			}
-		});
 	}
 
 	private StringBinding column(ObservableValue<Entry> entry, Column column) {
