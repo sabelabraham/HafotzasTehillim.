@@ -1,17 +1,29 @@
 package org.hafotzastehillim.fx.spreadsheet;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
+import java.util.function.Consumer;
 import java.util.stream.Collectors;
 
+import org.hafotzastehillim.fx.Model;
 import org.hafotzastehillim.fx.util.Util;
+import org.reactfx.Change;
+import org.reactfx.EventStream;
+import org.reactfx.Subscription;
 
+import static org.reactfx.EventStreams.*;
+
+import com.google.i18n.phonenumbers.AsYouTypeFormatter;
 import com.google.i18n.phonenumbers.NumberParseException;
 import com.google.i18n.phonenumbers.PhoneNumberUtil;
 import com.google.i18n.phonenumbers.PhoneNumberUtil.PhoneNumberFormat;
+import com.google.i18n.phonenumbers.Phonenumber.PhoneNumber;
+import com.sun.javafx.application.PlatformImpl;
 
+import javafx.application.Platform;
 import javafx.beans.property.BooleanProperty;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyBooleanProperty;
@@ -25,8 +37,10 @@ import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ListChangeListener;
 import javafx.collections.ObservableList;
+import javafx.scene.control.Alert.AlertType;
+import javafx.scene.control.ButtonType;
 
-public class Entry {
+public class Entry implements Selectable, Comparable<Entry> {
 
 	public static final String CHECKMARK = "\u2713";
 
@@ -35,6 +49,9 @@ public class Entry {
 	private int row = -1;
 	private int shavuosRow = -1;
 	private int giftsRow = -1;
+
+	private StringProperty created;
+	private StringProperty modified;
 
 	private StringProperty id;
 	private StringProperty gender;
@@ -62,6 +79,11 @@ public class Entry {
 	private ReadOnlyIntegerWrapper total;
 	private ReadOnlyBooleanWrapper detailsChanged;
 
+	private EventStream<Change<String>> detailsChangeStream;
+	private EventStream<Object> changeStream;
+
+	private Subscription modificationSubscription;
+
 	private Entry() {
 		points = FXCollections.observableArrayList();
 		shavuosData = FXCollections.observableArrayList();
@@ -74,6 +96,21 @@ public class Entry {
 		});
 
 		detailsChanged = new ReadOnlyBooleanWrapper(this, "detailsChanged", false);
+
+		created();
+
+		detailsChangeStream = merge(changesOf(idProperty()), changesOf(genderProperty()),
+				changesOf(firstNameProperty()), changesOf(lastNameProperty()), changesOf(addressNumberProperty()),
+				changesOf(addressNameProperty()), changesOf(aptProperty()), changesOf(cityProperty()),
+				changesOf(stateProperty()), changesOf(zipProperty()), changesOf(phoneProperty()),
+				changesOf(firstNameYiddishProperty()), changesOf(lastNameYiddishProperty()),
+				changesOf(fatherNameProperty()), changesOf(schoolProperty()), changesOf(ageProperty()),
+				changesOf(cityYiddishProperty()));
+
+		changeStream = merge(detailsChangeStream, changesOf(getPoints()), changesOf(getShavuosData()),
+				changesOf(getGiftsReceived()));
+
+		modificationSubscription = changeStream.subscribe(obj -> modified());
 	}
 
 	public Entry(Spreadsheet sheet) {
@@ -87,6 +124,8 @@ public class Entry {
 		this.row = row;
 		this.sheet = sheet;
 
+		modificationSubscription.unsubscribe();
+
 		loadDetails();
 
 		shavuosRow = sheet.getRow(Tab.SHAVUOS.ordinal(), getId(), (q, v, col) -> q.equals(v), 0);
@@ -94,6 +133,74 @@ public class Entry {
 
 		loadShavuosData();
 		loadGiftsData();
+
+		modificationSubscription.unsubscribe();
+	}
+
+	public final String getCreated() {
+		return createdProperty().get();
+	}
+
+	public Instant getCreatedInstant() {
+		return Instant.parse(getCreated());
+	}
+
+	public final String getModified() {
+		return modifiedProperty().get();
+	}
+
+	public Instant getModifiedInstant() {
+		return Instant.parse(getModified());
+	}
+
+	public final void setCreated(String str) {
+		createdProperty().set(str);
+	}
+
+	public final void setCreated(long instant) {
+		createdProperty().set(Instant.ofEpochMilli(instant).toString());
+	}
+
+	public final void setCreated(Instant instant) {
+		setCreated(instant.toString());
+	}
+
+	public final void created() {
+		setCreated(Instant.now());
+	}
+
+	public final void setModified(String str) {
+		modifiedProperty().set(str);
+	}
+
+	public final void setModified(long instant) {
+		modifiedProperty().set(Instant.ofEpochMilli(instant).toString());
+	}
+
+	public final void setModified(Instant instant) {
+		setModified(instant.toString());
+	}
+
+	public final void modified() {
+		setModified(Instant.now());
+	}
+
+	public StringProperty createdProperty() {
+		if (created == null) {
+			created = new SimpleStringProperty(this, "created", "");
+			created.addListener((obs, ov, nv) -> detailsChanged.set(true));
+		}
+
+		return created;
+	}
+
+	public StringProperty modifiedProperty() {
+		if (modified == null) {
+			modified = new SimpleStringProperty(this, "modified", "");
+			modified.addListener((obs, ov, nv) -> detailsChanged.set(true));
+		}
+
+		return modified;
 	}
 
 	public final String getId() {
@@ -101,82 +208,66 @@ public class Entry {
 	}
 
 	public final String getGender() {
-
 		return genderProperty().get();
 	}
 
 	public final String getFirstName() {
-
 		return firstNameProperty().get();
 	}
 
 	public final String getLastName() {
-
 		return lastNameProperty().get();
 	}
 
 	public final String getAddressNumber() {
-
 		return addressNumberProperty().get();
 	}
 
 	public final String getAddressName() {
-
 		return addressNameProperty().get();
 	}
 
 	public final String getApt() {
-
 		return aptProperty().get();
 	}
 
 	public final String getCity() {
-
 		return cityProperty().get();
 	}
 
 	public final String getState() {
-
 		return stateProperty().get();
 	}
 
 	public final String getZip() {
-
 		return zipProperty().get();
 	}
 
 	public final String getPhone() {
-
 		return phoneProperty().get();
 	}
 
 	public final String getFirstNameYiddish() {
-
 		return firstNameYiddishProperty().get();
 	}
 
 	public final String getLastNameYiddish() {
-
 		return lastNameYiddishProperty().get();
 	}
 
 	public final String getFatherName() {
-
 		return fatherNameProperty().get();
 	}
 
 	public final String getSchool() {
-
 		return schoolProperty().get();
 	}
 
 	public final String getAge() {
-
 		return ageProperty().get();
 	}
 
 	public final String getCityYiddish() {
-
 		return cityYiddishProperty().get();
 	}
 
@@ -318,6 +409,10 @@ public class Entry {
 		if (apt == null) {
 			apt = new SimpleStringProperty(this, "apt", "");
 			apt.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			apt.addListener((obs, ov, nv) -> {
+				if (!nv.isEmpty() && !nv.contains("#"))
+					apt.set("#" + nv);
+			});
 		}
 
 		return apt;
@@ -430,8 +525,8 @@ public class Entry {
 	private void loadShavuosData() {
 		if (shavuosRow >= 0) {
 			List<String> data = sheet.getRow(Tab.SHAVUOS.ordinal(), shavuosRow);
-			setShavuosData(
-					data.subList(1, data.size()).stream().map(i -> Integer.parseInt(i)).collect(Collectors.toList()));
+			setShavuosData(data.subList(1, data.size()).stream().map(i -> i.isEmpty() ? 0 : Integer.parseInt(i))
+					.collect(Collectors.toList()));
 		}
 	}
 
@@ -443,6 +538,7 @@ public class Entry {
 		}
 	}
 
+	@SuppressWarnings("restriction")
 	private void loadDetails() {
 		if (tab == -1) {
 			throw new IllegalStateException("Tab value not set.");
@@ -454,13 +550,36 @@ public class Entry {
 		List<String> data = sheet.getRow(tab, row);
 
 		// format phone number
-		if (data.size() > Column.PHONE.getColumn()) {
-			String phone = data.get(Column.PHONE.getColumn());
+		if (data.size() > Column.PHONE.ordinal()) {
+			String phone = data.get(Column.PHONE.ordinal());
 			try {
-				phone = util.format(util.parse(phone, "US"), PhoneNumberFormat.NATIONAL);
-				data.set(Column.PHONE.getColumn(), phone);
+				PhoneNumber pn = util.parse(phone, "US");
+				if (!Model.getInstance().isIgnoreInvalidPhone() && !util.isValidNumber(pn)) {
+					throw new Exception();
+				}
+
+				phone = util.format(pn, PhoneNumberFormat.NATIONAL);
+
+				data.set(Column.PHONE.ordinal(), phone);
 			} catch (NumberParseException e) {
-				System.err.println(e.getMessage());
+				if (!Model.getInstance().isIgnoreInvalidPhone()) {
+					PlatformImpl
+							.runAndWait(() -> Util.createAlert(
+									AlertType.WARNING, "Missing Phone", "Missing Phone Number", "Entry \""
+											+ data.get(Column.ID_NUMBER.ordinal()) + "\" phone number is empty",
+									ButtonType.OK));
+				}
+			} catch (Exception e) {
+				AsYouTypeFormatter fmt = util.getAsYouTypeFormatter("US");
+				String input = "";
+				for(char c : phone.toCharArray())
+					input = fmt.inputDigit(c);
+				
+				String p = input;
+				PlatformImpl
+						.runAndWait(() -> Util.createAlert(AlertType.WARNING, "Invalid Phone", "Invalid Phone Number",
+								"Entry \"" + data.get(Column.ID_NUMBER.ordinal()) + "\" has an invalid phone number\n" + p,
+								ButtonType.OK));
 			}
 		}
 
@@ -469,14 +588,21 @@ public class Entry {
 	}
 
 	public void reload() {
+		modificationSubscription.unsubscribe();
+
 		loadDetails();
 		loadShavuosData();
 		loadGiftsData();
+
+		modificationSubscription = changeStream.subscribe(obj -> modified());
 	}
 
 	public void saveDetails() {
 		if (tab == -1) {
 			throw new IllegalStateException("Tab value not set.");
+		}
+		if (row == -1) {
+			throw new IllegalStateException("Row value not set.");
 		}
 
 		if (!detailsChanged.get())
@@ -485,19 +611,32 @@ public class Entry {
 		List<String> data = getDetails();
 
 		// un-format phone
-		if (data.size() > Column.PHONE.getColumn()) {
-			String phone = data.get(Column.PHONE.getColumn()).replaceAll("[^\\d]", "");
-			data.set(Column.PHONE.getColumn(), phone);
+		if (data.size() > Column.PHONE.ordinal()) {
+			String phone = data.get(Column.PHONE.ordinal()).replaceAll("[^\\d]", "");
+			data.set(Column.PHONE.ordinal(), phone);
 		}
 
-		if (row >= 0) {
-			sheet.updateRow(tab, row, data);
-		} else {
-			row = sheet.addRow(tab, data);
-			sheet.setCellValue(tab, row, Column.TOTAL_POINTS.getColumn(),
-					"=SUM(" + Column.toName(Column.FIRST_CAMPAIGN.getColumn()) + (row + 1) + ":AAI" + (row + 1) + ")");
-			overwriteConcurrentPointsWithLocalValues();
+		sheet.updateRow(tab, row, data);
+
+	}
+
+	public void persist(Consumer<Integer> onDone) {
+		sheet.persist(this, onDone);
+	}
+
+	public void persist() {
+		persist(null);
+	}
+
+	public void saveModified() {
+		if (tab == -1) {
+			throw new IllegalStateException("Tab value not set.");
 		}
+		if (row == -1) {
+			throw new IllegalStateException("Row value not set.");
+		}
+
+		sheet.setCellValue(tab, row, Column.MODIFIED.ordinal(), getModified());
 	}
 
 	public void overwriteConcurrentPointsWithLocalValues() {
@@ -510,11 +649,14 @@ public class Entry {
 
 		for (int i = 0; i < points.size(); i++) {
 			if (points.get(i) == 0) {
-				sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.getColumn() + i, "");
+				sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.ordinal() + i, "");
 			} else {
-				sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.getColumn() + i, points.get(i));
+				sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.ordinal() + i, points.get(i));
 			}
 		}
+
+		modified();
+		saveModified();
 	}
 
 	public int getTab() {
@@ -561,6 +703,9 @@ public class Entry {
 		if (tab < 0) {
 			throw new IllegalStateException("Tab value not set.");
 		}
+		if (row < 0) {
+			throw new IllegalStateException("Row value not set.");
+		}
 
 		if (index < points.size()) {
 			points.set(index, p);
@@ -572,12 +717,13 @@ public class Entry {
 			points.add(p);
 		}
 
-		if (row >= 0) {
-			if (p <= 0)
-				sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.getColumn() + index, "");
-			else
-				sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.getColumn() + index, p);
-		}
+		if (p <= 0)
+			sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.ordinal() + index, "");
+		else
+			sheet.setCellValue(tab, row, Column.FIRST_CAMPAIGN.ordinal() + index, p);
+
+		modified();
+		saveModified();
 	}
 
 	public int getPoint(int index) {
@@ -596,6 +742,15 @@ public class Entry {
 	}
 
 	public void putShavuosData(int index, int data) {
+		if (shavuosRow < 0) {
+			sheet.addRow(Tab.SHAVUOS.ordinal(), Collections.singletonList(getId()), row -> {
+				shavuosRow = row;
+				putShavuosData(index, data);
+			});
+
+			return;
+		}
+
 		if (index < shavuosData.size()) {
 			shavuosData.set(index, data);
 		} else {
@@ -606,14 +761,13 @@ public class Entry {
 			shavuosData.add(data);
 		}
 
-		if (shavuosRow < 0) {
-			shavuosRow = sheet.addRow(Tab.SHAVUOS.ordinal(), Collections.singletonList(getId()));
-		}
-
 		if (data <= 0)
 			sheet.setCellValue(Tab.SHAVUOS.ordinal(), shavuosRow, 1 + index, "");
 		else
 			sheet.setCellValue(Tab.SHAVUOS.ordinal(), shavuosRow, 1 + index, data);
+
+		modified();
+		saveModified();
 
 	}
 
@@ -633,6 +787,16 @@ public class Entry {
 	}
 
 	public void putGiftReceived(int index, boolean data) {
+
+		if (giftsRow < 0) {
+			sheet.addRow(Tab.GIFTS.ordinal(), Collections.singletonList(getId()), row -> {
+				giftsRow = row;
+				putGiftReceived(index, data);
+			});
+
+			return;
+		}
+
 		if (index < giftsReceived.size()) {
 			giftsReceived.set(index, data);
 		} else {
@@ -643,15 +807,13 @@ public class Entry {
 			giftsReceived.add(data);
 		}
 
-		if (giftsRow < 0) {
-			giftsRow = sheet.addRow(Tab.GIFTS.ordinal(), Collections.singletonList(getId()));
-		}
-
 		if (!data)
 			sheet.setCellValue(Tab.GIFTS.ordinal(), giftsRow, 1 + index, "");
 		else
 			sheet.setCellValue(Tab.GIFTS.ordinal(), giftsRow, 1 + index, CHECKMARK);
 
+		modified();
+		saveModified();
 	}
 
 	public boolean isGiftRecieved(int index) {
@@ -659,6 +821,10 @@ public class Entry {
 			return giftsReceived.get(index);
 
 		return false;
+	}
+
+	public boolean isEligibleForGift(int index) {
+		return getTotal() / 100 >= index + 1 && !isGiftRecieved(index);
 	}
 
 	public ReadOnlyIntegerProperty totalProperty() {
@@ -672,16 +838,16 @@ public class Entry {
 	private void setData(List<String> data) {
 		Column[] cols = Column.values();
 
-		for (int i = 0; i < Column.TOTAL_POINTS.getColumn(); i++) {
+		for (int i = 0; i < Column.TOTAL_POINTS.ordinal(); i++) {
 			set(cols[i], cols[i].getData(data));
 		}
 
-		if (data.size() <= Column.FIRST_CAMPAIGN.getColumn()) {
+		if (data.size() <= Column.FIRST_CAMPAIGN.ordinal()) {
 			setPoints(Collections.emptyList());
 			return;
 		}
 
-		setPoints(data.subList(Column.FIRST_CAMPAIGN.getColumn(), data.size()).stream().mapToInt(cell -> {
+		setPoints(data.subList(Column.FIRST_CAMPAIGN.ordinal(), data.size()).stream().mapToInt(cell -> {
 			if (cell == null || "".equals(cell))
 				return 0;
 			return Integer.parseInt(cell);
@@ -692,11 +858,11 @@ public class Entry {
 		List<String> data = new ArrayList<>();
 		Column[] cols = Column.values();
 
-		for (int i = 0; i < Column.TOTAL_POINTS.getColumn(); i++) {
+		for (int i = 0; i < Column.TOTAL_POINTS.ordinal(); i++) {
 			data.add(get(cols[i]));
 		}
 
-		data.add("=SUM(" + Column.toName(Column.FIRST_CAMPAIGN.getColumn()) + (row + 1) + ":AAI" + (row + 1) + ")");
+		data.add("=SUM(" + Column.toName(Column.FIRST_CAMPAIGN.ordinal()) + (row + 1) + ":AAI" + (row + 1) + ")");
 
 		return data;
 	}
@@ -704,39 +870,43 @@ public class Entry {
 	public String get(Column column) {
 		switch (column) {
 		case ID_NUMBER:
-			return id.get();
+			return getId();
+		case CREATED:
+			return getCreated();
+		case MODIFIED:
+			return getModified();
 		case GENDER:
-			return gender.get();
+			return getGender();
 		case FIRST_NAME:
-			return firstName.get();
+			return getFirstName();
 		case LAST_NAME:
-			return lastName.get();
+			return getLastName();
 		case ADDRESS_NUMBER:
-			return addressNumber.get();
+			return getAddressNumber();
 		case ADDRESS_NAME:
-			return addressName.get();
+			return getAddressName();
 		case APT:
-			return apt.get();
+			return getApt();
 		case CITY:
-			return city.get();
+			return getCity();
 		case STATE:
-			return state.get();
+			return getState();
 		case ZIP:
-			return zip.get();
+			return getZip();
 		case CITY_YIDDISH:
-			return cityYiddish.get();
+			return getCityYiddish();
 		case CLASS:
-			return age.get();
+			return getAge();
 		case SCHOOL:
-			return school.get();
+			return getSchool();
 		case PHONE:
-			return phone.get();
+			return getPhone();
 		case FATHER_NAME:
-			return fatherName.get();
+			return getFatherName();
 		case LAST_NAME_YIDDISH:
-			return lastNameYiddish.get();
+			return getLastNameYiddish();
 		case FIRST_NAME_YIDDISH:
-			return firstNameYiddish.get();
+			return getFirstNameYiddish();
 		default:
 			throw new RuntimeException("Unknown Column");
 		}
@@ -747,6 +917,12 @@ public class Entry {
 		switch (column) {
 		case ID_NUMBER:
 			setId(data);
+			break;
+		case CREATED:
+			setCreated(data);
+			break;
+		case MODIFIED:
+			setModified(data);
 			break;
 		case GENDER:
 			setGender(data);
@@ -801,9 +977,26 @@ public class Entry {
 		}
 	}
 
+	public EventStream<Change<String>> getDetailsChangeStream() {
+		return detailsChangeStream;
+	}
+
+	public EventStream<Object> getChangeStream() {
+		return changeStream;
+	}
+
 	@Override
 	public String toString() {
 		return getFirstNameYiddish() + " " + getLastNameYiddish();
+	}
+
+	@Override
+	public int compareTo(Entry other) {
+		int ln = getLastNameYiddish().compareTo(other.getLastNameYiddish());
+		if (ln != 0)
+			return ln;
+
+		return getPhone().compareTo(other.getPhone());
 	}
 
 }

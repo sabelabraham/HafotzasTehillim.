@@ -23,6 +23,7 @@ public class Manifest {
 		FXManifest man = CreateManifest.create(URI.create("file:///C:/users/yossel/desktop/manifest/"),
 				"org.hafotzastehillim.fx.Main", Paths.get(URI.create("file:///C:/users/yossel/desktop/manifest/")), key);
 		man.cacheDir = "USERLIB/PointEntry/lib/";
+		
 		System.out.println(man);
 	}
 }

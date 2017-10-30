@@ -1,50 +1,42 @@
 package org.hafotzastehillim.fx.spreadsheet;
 
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.List;
 
 public enum Column {
 
-	ID_NUMBER("A"),
-	GENDER("B"),
-	FIRST_NAME("C"),
-	LAST_NAME("D"),
-	ADDRESS_NUMBER("E"),
-	ADDRESS_NAME("F"),
-	APT("G"),
-	CITY("H"),
-	STATE("I"),
-	ZIP("J"),
-	CITY_YIDDISH("K"),
-	CLASS("L"),
-	SCHOOL("M"),
-	PHONE("N"),
-	FATHER_NAME("O"),
-	LAST_NAME_YIDDISH("P"),
-	FIRST_NAME_YIDDISH("Q"),
-	TOTAL_POINTS("R"),
-	FIRST_CAMPAIGN("S");
-
+	ID_NUMBER, //
+	CREATED, //
+	MODIFIED, //
+	GENDER, //
+	FIRST_NAME, //
+	LAST_NAME, //
+	ADDRESS_NUMBER, //
+	ADDRESS_NAME, //
+	APT, //
+	CITY, //
+	STATE, //
+	ZIP, //
+	CITY_YIDDISH, //
+	CLASS, //
+	SCHOOL, //
+	PHONE, //
+	FATHER_NAME, //
+	LAST_NAME_YIDDISH, //
+	FIRST_NAME_YIDDISH, //
+	TOTAL_POINTS, //
+	FIRST_CAMPAIGN;//
 
 	public String getData(List<String> data) {
-		if(data.size() <= getColumn())
+		if (data.size() <= ordinal())
 			return "";
 
-		return data.get(getColumn());
-	}
-
-	public int getColumn() {
-		return ordinal();
+		return data.get(ordinal());
 	}
 
 	public String getName() {
-		return toName(getColumn());
-	}
-
-	Column(int column) {
-	}
-
-	Column(String name) {
-		this(toNumber(name));
+		return toName(ordinal());
 	}
 
 	public static int toNumber(String name) {
@@ -63,5 +55,13 @@ public enum Column {
 			number /= 26;
 		}
 		return sb.reverse().toString();
+	}
+
+	private static final List<Column> details = Collections.unmodifiableList(
+			Arrays.asList(ID_NUMBER, GENDER, FIRST_NAME, LAST_NAME, ADDRESS_NUMBER, ADDRESS_NAME, APT, CITY, STATE, ZIP,
+					CITY_YIDDISH, CLASS, SCHOOL, PHONE, FATHER_NAME, LAST_NAME_YIDDISH, FIRST_NAME_YIDDISH));
+
+	public static List<Column> details() {
+		return details;
 	}
 }

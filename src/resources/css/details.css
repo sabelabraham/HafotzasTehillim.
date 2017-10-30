@@ -1,50 +1,25 @@
+#points-pane, #shavuos-pane, #gifts-pane {
+	-fx-border-color: #cfcfcf;
+	-fx-border-radius: 10.0;
+}
+
+#points-list, #shavuos-list, #gifts-list {
+	-fx-border-color: #bababa;
+	-fx-background-color: white;
+}
+
+#points-list .list-cell, #shavuos-list .list-cell, #gifts-list .list-cell {
+	-fx-cell-size: 30.0;
+}
+
 #points-add, #shavuos-add {
     -fx-text-fill: dodgerblue;
 }
 
-#total-container {
-	-fx-border-color: #bababa;
-	-fx-border-radius: 7.0 7.0 7.0 7.0;
-}
 
 .list-view .scroll-bar:horizontal .increment-arrow,
 .list-view .scroll-bar:horizontal .decrement-arrow,
 .list-view .scroll-bar:horizontal .increment-button,
 .list-view .scroll-bar:horizontal .decrement-button {
     -fx-padding:0.0;
-}
-
-.list-view {
-	-fx-background-color: transparent;
-	-fx-padding: 15.0 0.0 0.0 0.0;
-}
-
-.list-view .hbox {
-	-fx-spacing: 15.0;
-}
-
-.list-view .list-cell{
-	-fx-border-color: #cfcfcf;
-	-fx-cell-size: 30.0;
-	-fx-cursor: hand;
-}
-
-.list-view .list-cell:empty {
-	-fx-border-color: transparent;
-	-fx-background-color: transparent;
-}
-
-.list-view .round-edged-list-cell:first {
-	-fx-border-radius: 7.0 7.0 0.0 0.0;
-	-fx-background-radius: 7.0 7.0 0.0 0.0;
-}
-
-.list-view .round-edged-list-cell:last {
-	-fx-border-radius: 0.0 0.0 7.0 7.0;
-	-fx-background-radius: 0.0 0.0 7.0 7.0;
-}
-
-.list-view .round-edged-list-cell:single {
-	-fx-border-radius:  7.0;
-	-fx-background-radius: 7.0;
 }

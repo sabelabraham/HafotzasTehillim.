@@ -1,8 +1,13 @@
 package org.hafotzastehillim.fx;
 
-import java.awt.im.InputContext;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.List;
+import java.util.stream.Collectors;
+
 import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.spreadsheet.Tab;
@@ -18,9 +23,13 @@ import javafx.beans.value.ChangeListener;
 import javafx.event.EventHandler;
 import javafx.fxml.FXML;
 import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
 import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.input.KeyEvent;
+import javafx.util.StringConverter;
+import net.sourceforge.zmanim.hebrewcalendar.HebrewDateFormatter;
+import net.sourceforge.zmanim.hebrewcalendar.JewishDate;
 
 public class FormController {
 
@@ -47,7 +56,11 @@ public class FormController {
 	@FXML
 	private TextField zip;
 	@FXML
-	ComboBox<Tab> cityYiddish;
+	private Label memberSince;
+	@FXML
+	private Label memberSinceLabel;
+	@FXML
+	ComboBox<String> cityYiddish;
 	@FXML
 	private TextField age;
 	@FXML
@@ -65,7 +78,6 @@ public class FormController {
 	private Entry entry;
 
 	private ChangeListener<Boolean> genderListener;
-	private ChangeListener<Tab> cityYiddishListener;
 
 	private AsYouTypeFormatter phoneFormatter;
 
@@ -74,7 +86,7 @@ public class FormController {
 		fields = Arrays.asList(id, firstName, lastName, addressNumber, addressName, apt, city, state, zip, age, school,
 				phone, fatherName, lastNameYiddish, firstNameYiddish);
 
-		cityYiddish.getItems().addAll(Tab.namedCities());
+		cityYiddish.getItems().addAll(Tab.namedCities().stream().map(t -> t.toString()).collect(Collectors.toList()));
 
 		genderListener = (obs, ov, nv) -> {
 			if (nv) {
@@ -83,9 +95,6 @@ public class FormController {
 				if (girl.isSelected())
 					entry.setGender("Girl");
 			}
-		};
-		cityYiddishListener = (obs, ov, nv) -> {
-			entry.setCityYiddish(nv.toString());
 		};
 
 		phoneFormatter = PhoneNumberUtil.getInstance().getAsYouTypeFormatter("US");
@@ -142,11 +151,11 @@ public class FormController {
 			});
 
 			Model.getInstance().getSpreadsheet().findEntry(phone.getText().replaceAll("[^\\d]", ""), consumer,
-					(q, v, c) -> q.equals(v), Column.PHONE.getColumn());
+					(q, v, c) -> q.equals(v), Column.PHONE.ordinal());
 		});
 
 		phone.sceneProperty().addListener((obs, ov, nv) -> {
-			if(nv != null && entry == null) {
+			if (nv != null && entry == null) {
 				phone.requestFocus();
 			}
 		});
@@ -158,10 +167,20 @@ public class FormController {
 		fatherName.setOnKeyTyped(hebrew);
 		school.setOnKeyTyped(hebrew);
 		age.setOnKeyTyped(hebrew);
+		cityYiddish.getEditor().setOnKeyTyped(hebrew);
+	}
+
+	private static final DateTimeFormatter SHORT_DATE_FORMATTER = DateTimeFormatter.ofPattern("MMM dd, ''yy");
+	private static final HebrewDateFormatter HEBREW_FORMATTER = new HebrewDateFormatter();
+	static {
+		HEBREW_FORMATTER.setHebrewFormat(true);
 	}
 
 	public void setEntry(Entry e) {
 		detach();
+
+		memberSince.setVisible(e != null);
+		memberSinceLabel.setVisible(e != null);
 
 		if (e == null)
 			return;
@@ -170,11 +189,6 @@ public class FormController {
 
 		boy.setSelected(entry.getGender().equalsIgnoreCase("Boy"));
 		girl.setSelected(entry.getGender().equalsIgnoreCase("Girl"));
-
-		if (!entry.getCityYiddish().isEmpty()) {
-			cityYiddish.getSelectionModel().select(Tab.getTab(entry.getCityYiddish()));
-		}
-
 		id.textProperty().bindBidirectional(entry.idProperty());
 		firstName.textProperty().bindBidirectional(entry.firstNameProperty());
 		lastName.textProperty().bindBidirectional(entry.lastNameProperty());
@@ -190,12 +204,17 @@ public class FormController {
 		fatherName.textProperty().bindBidirectional(entry.fatherNameProperty());
 		lastNameYiddish.textProperty().bindBidirectional(entry.lastNameYiddishProperty());
 		firstNameYiddish.textProperty().bindBidirectional(entry.firstNameYiddishProperty());
+		cityYiddish.valueProperty().bindBidirectional(entry.cityYiddishProperty());
 
 		boy.selectedProperty().addListener(genderListener);
 		girl.selectedProperty().addListener(genderListener);
 
-		cityYiddish.getSelectionModel().selectedItemProperty().addListener(cityYiddishListener);
 		cityYiddish.setMouseTransparent(!cityYiddish.getSelectionModel().isEmpty());
+
+		Instant created = entry.getCreatedInstant();
+
+		memberSince.setText(SHORT_DATE_FORMATTER.format(created.atZone(ZoneId.systemDefault())) + "\t"
+				+ HEBREW_FORMATTER.format(new JewishDate(Date.from(created))));
 	}
 
 	private void detach() {
@@ -217,29 +236,22 @@ public class FormController {
 		fatherName.textProperty().unbindBidirectional(entry.fatherNameProperty());
 		lastNameYiddish.textProperty().unbindBidirectional(entry.lastNameYiddishProperty());
 		firstNameYiddish.textProperty().unbindBidirectional(entry.firstNameYiddishProperty());
+		cityYiddish.valueProperty().unbindBidirectional(entry.cityYiddishProperty());
 
 		boy.selectedProperty().removeListener(genderListener);
 		girl.selectedProperty().removeListener(genderListener);
-
-		cityYiddish.getSelectionModel().selectedItemProperty().removeListener(cityYiddishListener);
 	}
 
 	public Entry getEntry() {
 		if (entry != null) {
-			if (entry.getId().isEmpty()) // will only happen on sibling copy
-				entry.setId("" + Model.getInstance().getSpreadsheet().uniqueId(entry.getTab()));
-
 			return entry;
 		}
 
 		Entry e = new Entry(Model.getInstance().getSpreadsheet());
 
-		if (cityYiddish.getSelectionModel().isEmpty())
+		if (cityYiddish.getValue().isEmpty())
 			throw new IllegalStateException("Required field.");
 
-		e.setTab(cityYiddish.getSelectionModel().getSelectedIndex());
-
-		e.setId("" + Model.getInstance().getSpreadsheet().uniqueId(e.getTab()));
 		e.setFirstName(firstName.getText());
 		e.setLastName(lastName.getText());
 		e.setAddressNumber(addressNumber.getText());
@@ -256,9 +268,8 @@ public class FormController {
 		e.setFirstNameYiddish(firstNameYiddish.getText());
 
 		e.setGender(boy.isSelected() ? "Boy" : girl.isSelected() ? "Girl" : "");
-		e.setCityYiddish(cityYiddish.getSelectionModel().getSelectedItem().toString());
+		e.setCityYiddish(cityYiddish.getValue());
 
-		System.out.println(e);
 		return e;
 	}
 }

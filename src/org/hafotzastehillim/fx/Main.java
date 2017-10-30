@@ -1,23 +1,38 @@
 package org.hafotzastehillim.fx;
 
+import java.io.IOException;
+import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
+import java.net.Socket;
+import java.net.UnknownHostException;
+import java.time.Instant;
+
+import org.hafotzastehillim.fx.spreadsheet.LoginDialog;
 import org.hafotzastehillim.fx.spreadsheet.SheetsAPI;
+import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
 import org.hafotzastehillim.fx.util.Util;
 
+import com.jfoenix.controls.JFXDecorator;
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.fxml.FXMLLoader;
+import javafx.concurrent.Service;
+import javafx.concurrent.Task;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
-import javafx.scene.layout.Pane;
+import javafx.scene.layout.BorderPane;
 import javafx.stage.Stage;
 
 public class Main extends Application {
 	public static final int FIRST_SHAVUOS_YEAR = 2017;
+	public static final Image ICON;
+
+	static {
+		ICON = new Image(Main.class.getResource("/resources/images/logo.png").toExternalForm());
+	}
 
 	public volatile static boolean running;
 	private static Application app;
@@ -35,35 +50,32 @@ public class Main extends Application {
 		Thread.setDefaultUncaughtExceptionHandler((t, e) -> {
 			pushNotification("An unexpected error occured");
 			Util.showErrorDialog(e);
-
-			e.printStackTrace();
 		});
-
-		server = new ServerSocket(9091, 0, InetAddress.getByName(null));
-		running = true;
 	}
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
+		Model.getInstance().setPrimaryStage(primaryStage);
+
+		initSingleInstance();
+		running = true;
 		app = this;
 
 		SearchView searchView = new SearchView();
 		snackbar = new JFXSnackbar(searchView);
 
-		Pane p = FXMLLoader.load(getClass().getResource("/resources/fxml/ReportQuery.fxml"));
-		Scene s = new Scene(p);
+		BorderPane border = new BorderPane(searchView);
+		border.setTop(new DateTimeBar());
+
+		Scene s = new Scene(border);
 
 		s.getStylesheets().add(getClass().getResource("/resources/css/root.css").toExternalForm());
 
-		primaryStage.getIcons().add(new Image(getClass().getResourceAsStream("/resources/images/logo.png")));
+		primaryStage.getIcons().add(ICON);
 		primaryStage.setTitle("Point Entry");
 		primaryStage.setScene(s);
 		primaryStage.show();
 
-		if (Model.getInstance().getSpreadsheet() == null) // might be loaded as last connection
-			searchView.showSpreadsheetDialog();
-		if (Model.getInstance().getSpreadsheet() == null) // still didn't select something
-			Platform.exit();
 	}
 
 	@Override
@@ -74,6 +86,10 @@ public class Main extends Application {
 
 		if (server != null)
 			server.close();
+
+		if (!Model.getInstance().isStaySignedIn()) {
+			SheetsAPI.logout();
+		}
 	}
 
 	public static void showDocument(String url) {
@@ -86,6 +102,36 @@ public class Main extends Application {
 			System.out.println(str);
 		else
 			snackbar.enqueue(new SnackbarEvent(str));
+	}
+
+	private void initSingleInstance() {
+		try {
+			server = new ServerSocket(9091, 0, InetAddress.getByName(null));
+			Thread listen = new Thread(() -> {
+				while (true) {
+					try {
+						server.accept().close();
+					} catch (IOException e) {
+					}
+
+					Platform.runLater(() -> Model.getInstance().getPrimaryStage().toFront());
+				}
+			});
+
+			listen.setDaemon(true);
+			listen.start();
+		} catch (BindException e) {
+			try {
+				Socket signal = new Socket("localhost", 9091);
+				signal.close();
+
+				System.out.println("Use existing instance.");
+				System.exit(0);
+			} catch (IOException e1) {
+			}
+		} catch (IOException e) {
+			e.printStackTrace();
+		}
 	}
 
 }

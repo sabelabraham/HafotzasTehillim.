@@ -1,6 +1,8 @@
 package org.hafotzastehillim.fx.spreadsheet;
 
 import java.util.List;
+import java.util.function.Consumer;
+import java.util.function.Predicate;
 
 import javafx.beans.value.WritableIntegerValue;
 import javafx.beans.value.WritableValue;
@@ -13,109 +15,67 @@ public interface Spreadsheet {
 
 	List<String> getRow(int tab, int row);
 
-	void setCellValue(int tab, int row, int column, String value);
+	void setCellValue(int tab, int row, int column, String value, Consumer<Integer> callback);
 
-	void setCellValue(int tab, int row, int column, double value);
+	default void setCellValue(int tab, int row, int column, String value) {
+		setCellValue(tab, row, column, value, null);
+	}
 
-	void updateRow(int tab, int row, List<String> data);
+	void setCellValue(int tab, int row, int column, double value, Consumer<Integer> callback);
 
-	int addRow(int tab, List<String> data);
+	default void setCellValue(int tab, int row, int column, double value) {
+		setCellValue(tab, row, column, value, null);
+	}
 
-	int uniqueId(int tab);
+	void updateRow(int tab, int row, List<String> data, Consumer<Integer> callback);
+
+	default void updateRow(int tab, int row, List<String> data) {
+		updateRow(tab, row, data, null);
+	}
+
+	void addRow(int tab, List<String> data, Consumer<Integer> callback);
+
+	default void addRow(int tab, List<String> data) {
+		addRow(tab, data, null);
+	}
+
+	void persist(Entry e, Consumer<Integer> callback);
 
 	void searchEntries(String query, ObservableList<? super Entry> consumer, ColumnMatcher matcher, int... columns);
 
-	void findEntry(String query, WritableValue<? super Entry> consumer,  ColumnMatcher matcher, int... columns);
+	void searchEntries(ObservableList<? super Entry> consumer, Predicate<List<String>> tester);
 
-	void searchRows(int tab, String query,  ObservableList<Integer> consumer, ColumnMatcher matcher, int... columns);
+	List<Entry> getEntries(String query, ColumnMatcher matcher, int... columns);
+
+	List<Entry> getEntries(Predicate<List<String>> tester);
+
+	void findEntry(String query, WritableValue<? super Entry> consumer, ColumnMatcher matcher, int... columns);
+
+	void findEntry(WritableValue<? super Entry> consumer, Predicate<List<String>> tester);
+
+	Entry getEntry(String query, ColumnMatcher matcher, int... columns);
+
+	Entry getEntry(Predicate<List<String>> tester);
+
+	void searchRows(int tab, String query, ObservableList<Integer> consumer, ColumnMatcher matcher, int... columns);
+
+	void searchRows(int tab, ObservableList<Integer> consumer, Predicate<List<String>> tester);
+
+	List<Integer> getRows(int tab, String query, ColumnMatcher matcher, int... columns);
+
+	List<Integer> getRows(int tab, Predicate<List<String>> tester);
 
 	void findRow(int tab, String query, WritableIntegerValue consumer, ColumnMatcher matcher, int... columns);
 
+	void findRow(int tab, WritableIntegerValue consumer, Predicate<List<String>> tester);
+
 	int getRow(int tab, String query, ColumnMatcher matcher, int... columns);
+
+	int getRow(int tab, Predicate<List<String>> tester);
 
 	Service<Void> searchService();
 
 	void reload();
 
 	Service<Void> loadService();
-
-	// default String getCellValue(Entry entry, Column column) {
-	// return getCellValue(entry.getTab(), entry.getRow(), column.getColumn());
-	// }
-	//
-	// default List<String> getRow(Entry entry) {
-	// return getRow(entry.getTab(), entry.getRow());
-	// }
-
-	// default void setRow(Entry entry, List<String> data) {
-	// setRow(entry.getTab(), entry.getRow(), data);
-	// }
-	//
-	// default Task<String> getCellValueTask(int tab, int row, int column) {
-	// return new Task<String>() {
-	// protected String call() {
-	// return getCellValue(sheet, row, column);
-	// }
-	// };
-	// }
-	//
-	// default Task<String> getCellValueTask(Entry entry, ColumnData column) {
-	// return getCellValueTask(entry.getSheet(), entry.getRow(),
-	// column.getColumn());
-	// }
-	//
-	// default void copyCellValue(int tab, int row, int column, StringProperty
-	// property) {
-	// Task<String> tsk = getCellValueTask(sheet, row, column);
-	// tsk.setOnFailed(evt -> tsk.getException().printStackTrace());
-	// tsk.setOnSucceeded(evt -> property.set(tsk.getValue()));
-	//
-	// new Thread(tsk).start();
-	// }
-	//
-	// default void copyCellValue(Entry entry, ColumnData column, StringProperty
-	// property) {
-	// copyCellValue(entry.getSheet(), entry.getRow(), column.getColumn(),
-	// property);
-	// }
-	//
-	// default void setCellValue(Entry entry, Column column, String value) {
-	// setCellValue(entry.getTab(), entry.getRow(), column.getColumn(), value);
-	// }
-	//
-	// default void setCellValue(Entry entry, Column column, double value) {
-	// setCellValue(entry.getTab(), entry.getRow(), column.getColumn(), value);
-	// }
-
-	// default Task<Void> setCellValueTask(int tab, int row, int column, String
-	// value) {
-	// return new Task<Void>() {
-	// protected Void call() {
-	// setCellValue(sheet, row, column, value);
-	// return null;
-	// }
-	// };
-	// }
-	//
-	// default Task<Void> setCellValueTask(Entry entry, ColumnData column, String
-	// value) {
-	// return setCellValueTask(entry.getSheet(), entry.getRow(), column.getColumn(),
-	// value);
-	// }
-	//
-	// default Task<Void> setCellValueTask(int tab, int row, int column, double
-	// value) {
-	// return new Task<Void>() {
-	// protected Void call() {
-	// setCellValue(sheet, row, column, value);
-	// return null;
-	// }
-	// };
-	// }
-	//
-	// default Task<Void> setCellValueTask(Entry entry, ColumnData column, double
-	// value) {
-	// return setCellValueTask(entry.getSheet(), entry.getRow(), column.getColumn(),
-	// value);
-	// }
 }

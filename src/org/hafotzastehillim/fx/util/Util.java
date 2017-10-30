@@ -7,6 +7,9 @@ import java.util.List;
 import java.util.Optional;
 import java.util.function.Consumer;
 
+import org.hafotzastehillim.fx.Main;
+import org.hafotzastehillim.fx.Model;
+
 import com.jfoenix.controls.JFXButton;
 
 import javafx.application.Platform;
@@ -24,6 +27,7 @@ import javafx.scene.Group;
 import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.Button;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.CheckBox;
@@ -34,8 +38,6 @@ import javafx.scene.control.Spinner;
 import javafx.scene.control.TextArea;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.control.TextInputControl;
-import javafx.scene.control.Alert.AlertType;
-import javafx.scene.image.Image;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.Pane;
 import javafx.scene.layout.Region;
@@ -49,11 +51,10 @@ import javafx.stage.Stage;
 
 public class Util {
 
-	@SuppressWarnings({"rawtypes", "unchecked"})
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void commitOnFocusLose(Spinner spinner) {
 		// hack for committing on focus lose
-		TextFormatter formatter = new TextFormatter(
-				spinner.getValueFactory().getConverter(), spinner.getValue());
+		TextFormatter formatter = new TextFormatter(spinner.getValueFactory().getConverter(), spinner.getValue());
 		spinner.getEditor().setTextFormatter(formatter);
 		spinner.getValueFactory().valueProperty().bindBidirectional(formatter.valueProperty());
 	}
@@ -112,6 +113,8 @@ public class Util {
 	}
 
 	public static void showErrorDialog(Throwable t) {
+		t.printStackTrace();
+		
 		StringWriter out = new StringWriter();
 		t.printStackTrace(new PrintWriter(out));
 
@@ -138,7 +141,7 @@ public class Util {
 			ButtonType... buttonTypes) {
 
 		Stage dialog = new Stage();
-		dialog.getIcons().add(new Image(Util.class.getResourceAsStream("/resources/images/logo.png")));
+		dialog.getIcons().add(Main.ICON);
 		dialog.initModality(Modality.APPLICATION_MODAL);
 		dialog.setResizable(false);
 		dialog.setTitle(title);
@@ -167,7 +170,10 @@ public class Util {
 		buttonBox.setPadding(new Insets(10));
 
 		VBox vbox = new VBox();
-		vbox.getChildren().addAll(content, new Separator(), buttonBox);
+		vbox.getChildren().add(content);
+
+		if (buttonTypes.length > 0)
+			vbox.getChildren().addAll(new Separator(), buttonBox);
 
 		Scene scene = new Scene(new StackPane(vbox));
 		dialog.setScene(scene);
@@ -213,6 +219,17 @@ public class Util {
 		alert.setTitle(title);
 		alert.setHeaderText(headerText);
 		alert.setResizable(false);
+		alert.initOwner(Model.getInstance().getPrimaryStage());
+
+		return alert.showAndWait();
+	}
+
+	public static Optional<ButtonType> createAlert(AlertType type, String title, String headerText, String message,
+			ButtonType... buttons) {
+		Alert alert = new Alert(type, message, buttons);
+		alert.setTitle(title);
+		alert.setHeaderText(headerText);
+		alert.initOwner(Model.getInstance().getPrimaryStage());
 
 		return alert.showAndWait();
 	}

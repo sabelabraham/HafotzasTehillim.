@@ -1,0 +1,44 @@
+.scroll-bar:horizontal .increment-arrow,
+.scroll-bar:horizontal .decrement-arrow,
+.scroll-bar:horizontal .increment-button,
+.scroll-bar:horizontal .decrement-button {
+    -fx-padding:0.0;
+}
+
+.table-view {
+	-fx-border-color: #bababa;
+}
+
+.number-cell {
+	-fx-background-color: -fx-inner-border, -fx-body-color-to-right;
+	-fx-background-insets: 0.0, 1.0;
+}
+
+.table-row-cell:selected .number-cell {
+	-fx-text-fill: black;
+}
+
+.table-row-cell:filled:selected {
+  -fx-background: -fx-control-inner-background ;
+  -fx-background-color: -fx-table-cell-border-color, -fx-background;
+  -fx-background-insets: 0.0, 0.0 0.0 1.0 0.0 ;
+  -fx-table-cell-border-color: derive(-fx-color, 5.0%);
+}
+
+
+.table-row-cell:odd:filled:selected{
+  -fx-background: -fx-control-inner-background-alt;
+}
+
+.table-row-cell:first {
+  -fx-background: rgb(225.0, 225.0, 225.0);
+}
+.table-row-cell:filled:first:selected {
+  -fx-background: rgb(225.0, 225.0, 225.0);
+}
+.table-row-cell:second {
+  -fx-background: -fx-control-inner-background;
+}
+.table-row-cell:filled:second:selected {
+  -fx-background: -fx-control-inner-background;
+}

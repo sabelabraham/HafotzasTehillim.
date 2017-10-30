@@ -9,11 +9,7 @@ import javafx.scene.control.TextField;
 import javafx.scene.control.TextFormatter;
 import javafx.scene.layout.HBox;
 
-public class PointEditorCell extends RoundEdgedListCell<EditorData<Integer>> {
-
-	public PointEditorCell(ObservableNumberValue itemSize) {
-		super(itemSize);
-	}
+public class PointEditorCell extends ListCell<EditorData<Integer>> {
 
 	@Override
 	protected void updateItem(EditorData<Integer> item, boolean empty) {
@@ -29,7 +25,8 @@ public class PointEditorCell extends RoundEdgedListCell<EditorData<Integer>> {
 		String txt = item.toString();
 		field.setText(txt.equals("0") ? "" : txt);
 		field.setTextFormatter(new TextFormatter<Integer>(change -> {
-			change.setText(change.getText().replaceAll("[^\\d]", ""));
+			if (change.isContentChange())
+				change.setText(change.getText().replaceAll("[^\\d]", ""));
 			return change;
 		}));
 		field.textProperty().addListener((obs, ov, nv) -> {

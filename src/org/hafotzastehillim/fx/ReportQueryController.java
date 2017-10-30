@@ -3,26 +3,45 @@ package org.hafotzastehillim.fx;
 import javafx.fxml.FXML;
 import javafx.scene.control.ToggleGroup;
 import javafx.scene.layout.GridPane;
+import javafx.util.StringConverter;
 import javafx.scene.control.TextField;
+import javafx.scene.control.TextFormatter;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Alert.AlertType;
 import javafx.scene.control.ButtonType;
+import javafx.scene.control.DatePicker;
 import javafx.scene.control.Spinner;
 import javafx.scene.control.SpinnerValueFactory;
+import javafx.application.Platform;
 import javafx.beans.value.ChangeListener;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.event.ActionEvent;
 
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.format.DateTimeParseException;
+import java.time.format.FormatStyle;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.TreeMap;
+import java.util.stream.Collectors;
 
 import org.hafotzastehillim.fx.spreadsheet.Entry;
+import org.hafotzastehillim.fx.spreadsheet.Tab;
+import org.hafotzastehillim.fx.util.HebrewChronology;
+import org.hafotzastehillim.fx.util.RangeParser;
 import org.hafotzastehillim.fx.util.Util;
 
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXCheckBox;
 import com.jfoenix.controls.JFXRadioButton;
 import com.jfoenix.controls.JFXSpinner;
+
+import static org.hafotzastehillim.fx.spreadsheet.Column.*;
 
 public class ReportQueryController {
 
@@ -49,6 +68,20 @@ public class ReportQueryController {
 	@FXML
 	private TextField lastNameSelect;
 	@FXML
+	private JFXRadioButton memberSinceAllToggle;
+	@FXML
+	private JFXRadioButton memberSinceSelectToggle;
+	@FXML
+	private DatePicker memberSinceSelectField;
+	@FXML
+	private JFXRadioButton memberSinceBeforeToggle;
+	@FXML
+	private DatePicker memberSinceBeforeField;
+	@FXML
+	private JFXRadioButton memberSinceFromToggle;
+	@FXML
+	private DatePicker memberSinceFromField;
+	@FXML
 	private JFXRadioButton pointsAllToggle;
 	@FXML
 	private ToggleGroup pointsGroup;
@@ -69,13 +102,11 @@ public class ReportQueryController {
 	@FXML
 	private JFXRadioButton campaignSelectToggle;
 	@FXML
-	private Spinner<Integer> campaignSelect;
+	private TextField campaignSelect;
 	@FXML
 	private JFXRadioButton campaignRangeToggle;
 	@FXML
-	private Spinner<Integer> campaignFrom;
-	@FXML
-	private Spinner<Integer> campaignTo;
+	private JFXCheckBox campaignAllMatch;
 	@FXML
 	private JFXRadioButton shavuosAllToggle;
 	@FXML
@@ -93,9 +124,28 @@ public class ReportQueryController {
 	@FXML
 	private GridPane grid;
 	@FXML
+	private JFXCheckBox familyGrouping;
+	@FXML
 	private JFXButton run;
 	@FXML
 	private JFXSpinner running;
+
+	private static final DateTimeFormatter DATE_FORMATTER = DateTimeFormatter.ofPattern("LL/dd");
+	private static final StringConverter<LocalDate> SHORT_CONVERTER = new StringConverter<LocalDate>() {
+
+		@Override
+		public String toString(LocalDate date) {
+			if (date == null)
+				return "";
+
+			return DATE_FORMATTER.format(date);
+		}
+
+		@Override
+		public LocalDate fromString(String string) {
+			throw new UnsupportedOperationException();
+		}
+	};
 
 	@FXML
 	public void initialize() {
@@ -107,8 +157,11 @@ public class ReportQueryController {
 		lastNameTo.disableProperty().bind(lastNameFrom.disabledProperty());
 
 		campaignSelect.disableProperty().bind(campaignSelectToggle.selectedProperty().not());
-		campaignFrom.disableProperty().bind(campaignRangeToggle.selectedProperty().not());
-		campaignTo.disableProperty().bind(campaignFrom.disabledProperty());
+		campaignAllMatch.disableProperty().bind(campaignSelect.disabledProperty());
+
+		memberSinceSelectField.disableProperty().bind(memberSinceSelectToggle.selectedProperty().not());
+		memberSinceBeforeField.disableProperty().bind(memberSinceBeforeToggle.selectedProperty().not());
+		memberSinceFromField.disableProperty().bind(memberSinceFromToggle.selectedProperty().not());
 
 		pointsMinimum.disableProperty().bind(pointsMinimumToggle.selectedProperty().not());
 		pointsFrom.disableProperty().bind(pointsRangeToggle.selectedProperty().not());
@@ -118,9 +171,13 @@ public class ReportQueryController {
 		shavuosFrom.disableProperty().bind(shavuosRangeToggle.selectedProperty().not());
 		shavuosTo.disableProperty().bind(shavuosFrom.disabledProperty());
 
-		Util.commitOnFocusLose(campaignSelect);
-		Util.commitOnFocusLose(campaignFrom);
-		Util.commitOnFocusLose(campaignTo);
+		memberSinceSelectField.setConverter(SHORT_CONVERTER);
+		memberSinceBeforeField.setConverter(SHORT_CONVERTER);
+		memberSinceFromField.setConverter(SHORT_CONVERTER);
+
+		memberSinceSelectField.setValue(LocalDate.now());
+		memberSinceBeforeField.setValue(LocalDate.now());
+		memberSinceFromField.setValue(LocalDate.now());
 
 		Util.commitOnFocusLose(pointsMinimum);
 		Util.commitOnFocusLose(pointsFrom);
@@ -133,8 +190,13 @@ public class ReportQueryController {
 		Util.selectOnFocus(lastNameFrom);
 		Util.selectOnFocus(lastNameTo);
 
-		((SpinnerValueFactory.IntegerSpinnerValueFactory) campaignTo.getValueFactory()).minProperty()
-				.bind(campaignFrom.valueProperty());
+		campaignSelect.setTextFormatter(new TextFormatter<String>(change -> {
+			if (change.getText().matches("[^\\s\\d,-]"))
+				return null;
+
+			return change;
+		}));
+
 		((SpinnerValueFactory.IntegerSpinnerValueFactory) pointsTo.getValueFactory()).minProperty()
 				.bind(pointsFrom.valueProperty());
 		((SpinnerValueFactory.IntegerSpinnerValueFactory) shavuosTo.getValueFactory()).minProperty()
@@ -145,71 +207,125 @@ public class ReportQueryController {
 		running.visibleProperty().bind(grid.disabledProperty());
 	}
 
+	private LocalDate getDate(String date) {
+		return LocalDate.from(Instant.parse(date).atZone(ZoneId.systemDefault()));
+	}
+
 	@FXML
 	public void run(ActionEvent event) {
+
+		if (campaignSelectToggle.isSelected()) {
+			try {
+				RangeParser.parse(campaignSelect.getText());
+			} catch (IllegalArgumentException e) {
+				Util.createAlert(AlertType.ERROR, "Error", "Error", "Error in Campaign select:\n" + e.getMessage());
+				return;
+			}
+		}
+
 		ObservableList<Entry> all = FXCollections.observableArrayList();
-		Model.getInstance().getSpreadsheet().searchEntries("ALL", all, (q, v, col) -> true, 0);
+		Model.getInstance().getSpreadsheet().searchEntries(all, row -> {
+			if (row.get(ID_NUMBER.ordinal()).isEmpty())
+				return false;
+
+			if (genderBoyToggle.isSelected()) {
+				if (!row.get(GENDER.ordinal()).equalsIgnoreCase("Boy")) {
+					return false;
+				}
+			}
+			if (genderGirlToggle.isSelected()) {
+				if (!row.get(GENDER.ordinal()).equalsIgnoreCase("Girl")) {
+					return false;
+				}
+			}
+			if (lastNameSelectToggle.isSelected()) {
+				if (!row.get(LAST_NAME.ordinal()).equalsIgnoreCase(lastNameSelect.getText())
+						&& !row.get(LAST_NAME_YIDDISH.ordinal()).equals(lastNameSelect.getText()))
+					return false;
+			}
+			if (lastNameRangeToggle.isSelected()) {
+				if (!(row.get(LAST_NAME.ordinal()).compareToIgnoreCase(lastNameFrom.getText()) >= 0
+						&& row.get(LAST_NAME.ordinal()).compareToIgnoreCase(lastNameTo.getText()) <= 0)
+						&& !(row.get(LAST_NAME_YIDDISH.ordinal()).compareTo(lastNameFrom.getText()) >= 0
+								&& row.get(LAST_NAME_YIDDISH.ordinal()).compareTo(lastNameTo.getText()) <= 0))
+					return false;
+			}
+			if (campaignSelectToggle.isSelected()) {
+				boolean noMatch = true;
+
+				for (int index : RangeParser.parse(campaignSelect.getText())) {
+					String point = row.size() <= FIRST_CAMPAIGN.ordinal() + index - 1 ? ""
+							: row.get(FIRST_CAMPAIGN.ordinal() + index - 1);
+
+					if (point.isEmpty() || point.equals("0")) {
+						if (campaignAllMatch.isSelected())
+							return false;
+					} else {
+						noMatch = false;
+					}
+				}
+				if (noMatch)
+					return false;
+			}
+			if (memberSinceSelectToggle.isSelected()) {
+				LocalDate memberSince = getDate(row.get(CREATED.ordinal()));
+				LocalDate selectedDate = memberSinceSelectField.getValue();
+
+				if (!memberSince.equals(selectedDate))
+					return false;
+			}
+			if (memberSinceBeforeToggle.isSelected()) {
+				LocalDate memberSince = getDate(row.get(CREATED.ordinal()));
+				LocalDate selectedDate = memberSinceBeforeField.getValue();
+
+				if (!memberSince.isBefore(selectedDate))
+					return false;
+			}
+			if (memberSinceFromToggle.isSelected()) {
+				LocalDate memberSince = getDate(row.get(CREATED.ordinal()));
+				LocalDate selectedDate = memberSinceFromField.getValue();
+
+				if (memberSince.isBefore(selectedDate))
+					return false;
+			}
+			if (pointsMinimumToggle.isSelected()) {
+				if (Integer.parseInt(row.get(TOTAL_POINTS.ordinal())) < pointsMinimum.getValue())
+					return false;
+			}
+
+			return true;
+		});
+
 		Model.getInstance().getSpreadsheet().searchService().setOnSucceeded(evt -> {
 
-			all.removeIf(entry -> { // FIXME try not to add in first place by using column matcher
+			Model.getInstance().getSpreadsheet().searchService().setOnSucceeded(null);
+
+			all.removeIf(entry -> {
 				boolean remove = false;
 
-				if (genderBoyToggle.isSelected()) {
-					remove |= !entry.getGender().equalsIgnoreCase("Boy");
-				}
-				if (genderGirlToggle.isSelected()) {
-					remove |= !entry.getGender().equalsIgnoreCase("Girl");
-				}
-
-				if (lastNameSelectToggle.isSelected()) {
-					remove |= !entry.getLastName().equalsIgnoreCase(lastNameSelect.getText())
-							&& !entry.getLastNameYiddish().equals(lastNameSelect.getText());
-				}
-				if (lastNameRangeToggle.isSelected()) {
-					remove |= !(entry.getLastName().compareToIgnoreCase(lastNameFrom.getText()) >= 0
-							&& entry.getLastName().compareToIgnoreCase(lastNameTo.getText()) <= 0)
-							&& !(entry.getLastNameYiddish().compareTo(lastNameFrom.getText()) >= 0
-									&& entry.getLastNameYiddish().compareTo(lastNameTo.getText()) <= 0);
-				}
-
-				if (campaignSelectToggle.isSelected()) {
-					remove |= entry.getPoint(campaignSelect.getValue() - 1) == 0;
-				}
-				if (campaignRangeToggle.isSelected()) {
-					int total = 0;
-					for (int i = campaignFrom.getValue() - 1; i < campaignTo.getValue(); i++) {
-						total += entry.getPoint(i);
-					}
-					remove |= total == 0;
-				}
-
-				if (pointsMinimumToggle.isSelected()) {
-					remove |= entry.getTotal() < pointsMinimum.getValue();
+				if (shavuosSelectToggle.isSelected()) {
+					remove |= entry.getShavuosData(shavuosSelect.getValue() - Main.FIRST_SHAVUOS_YEAR) == 0;
 				}
 				if (pointsRangeToggle.isSelected()) {
 					remove |= entry.getTotal() < pointsFrom.getValue() || entry.getTotal() > pointsTo.getValue();
 				}
 
-				if (shavuosSelectToggle.isSelected()) {
-					remove |= entry.getShavuosData(shavuosSelect.getValue() - Main.FIRST_SHAVUOS_YEAR) == 0;
-				}
-
 				return remove;
 			});
 
-			Model.getInstance().getSpreadsheet().searchService().setOnSucceeded(null);
-
 			Map<String, ObservableList<Entry>> map = new LinkedHashMap<>();
 
-			map.put("Test1", all);
-			map.put("Test2", all);
-			map.put("Test3", all);
-			map.put("Test4", all);
-			map.put("Test5", all);
-			map.put("Test6", all);
+			for (Tab t : Tab.namedCities()) {
+				ObservableList<Entry> list = FXCollections.observableArrayList(
+						all.stream().filter(e -> e.getCityYiddish().equals(t.toString())).collect(Collectors.toList()));
+				all.removeAll(list);
+				map.put(t.toPrettyString(), list);
+			}
 
-			ReportResultsView report = new ReportResultsView(map);
-			Util.createDialog(report, "Testing Reports", ButtonType.OK);
+			map.put(Tab.OTHER_CITIES.toPrettyString(), all);
+
+			ReportResultsView report = new ReportResultsView(map, familyGrouping.isSelected());
+			Platform.runLater(() -> Util.createDialog(report, "Reports", ButtonType.OK));
 		});
 
 	}

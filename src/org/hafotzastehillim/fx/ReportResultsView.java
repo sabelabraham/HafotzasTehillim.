@@ -1,19 +1,58 @@
 package org.hafotzastehillim.fx;
 
+import java.awt.Color;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
+import java.io.OutputStream;
+import java.time.Instant;
+import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.prefs.Preferences;
+import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.Cell;
+import org.apache.poi.ss.usermodel.FillPatternType;
+import org.apache.poi.ss.usermodel.HorizontalAlignment;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.xssf.usermodel.XSSFCellStyle;
+import org.apache.poi.xssf.usermodel.XSSFColor;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
+import org.hafotzastehillim.fx.cell.FamilyTableRow;
+import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
+import org.hafotzastehillim.fx.spreadsheet.FamilyGrouping;
+import org.hafotzastehillim.fx.spreadsheet.Tab;
+import org.hafotzastehillim.fx.util.TableViewUtils;
+import org.hafotzastehillim.fx.util.Util;
+
 import com.jfoenix.controls.JFXButton;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.binding.BooleanBinding;
+import javafx.beans.property.ReadOnlyObjectWrapper;
+import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
+import javafx.scene.Node;
+import javafx.scene.Scene;
 import javafx.scene.control.CheckBox;
+import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
-import javafx.scene.control.Tab;
-import javafx.scene.control.TabPane;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.SelectionMode;
+import javafx.scene.control.Separator;
+import javafx.scene.control.TableCell;
+import javafx.scene.control.TableRow;
 import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
@@ -23,116 +62,201 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.scene.paint.Color;
+import javafx.stage.FileChooser;
+import javafx.stage.Modality;
+import javafx.stage.FileChooser.ExtensionFilter;
+import javafx.stage.Stage;
+import javafx.util.Callback;
+
+import static org.hafotzastehillim.fx.spreadsheet.Column.*;
 
 public class ReportResultsView extends VBox {
 
-	public ReportResultsView(Map<String, ObservableList<Entry>> results) {
-		StackPane tableContainer = new StackPane();
-		tableContainer.setPadding(new Insets(10));
+	public ReportResultsView(Map<String, ObservableList<Entry>> results, boolean familyGrouping) {
 
-		GridPane listContainer = new GridPane();
-		listContainer.getColumnConstraints().addAll(Collections.nCopies(3, new ColumnConstraints(100)));
-		listContainer.setAlignment(Pos.CENTER);
-		listContainer.setPadding(new Insets(15));
+		getStylesheets().add(getClass().getResource("/resources/css/report-results-view.css").toExternalForm());
+		getStyleClass().add("report-results-view");
 
-		JFXButton viewAll = new JFXButton("View All");
-		viewAll.setTextFill(Color.DODGERBLUE);
-		viewAll.setOnAction(evt -> {
-			TabPane tabs = new TabPane();
-			tabs.setTabMinWidth(75);
-			tabs.setStyle("-fx-border-color: #bababa");
-
-			for (Map.Entry<String, ObservableList<Entry>> mapEntry : results.entrySet()) {
-				Tab tab = new Tab(mapEntry.getKey());
-				tab.setContent(getTable(mapEntry.getValue()));
-
-				tabs.getTabs().add(tab);
-			}
-
-			tableContainer.getChildren().setAll(tabs);
-		});
+		GridPane grid = new GridPane();
+		grid.getColumnConstraints().addAll(Collections.nCopies(3, new ColumnConstraints(100)));
+		grid.setAlignment(Pos.CENTER);
+		grid.setPadding(new Insets(15));
 
 		int i = 0;
-		for (Map.Entry<String, ObservableList<Entry>> mapEntry : results.entrySet()) {
-			Label label = new Label(mapEntry.getKey() + ": ");
-			Label amount = new Label("" + mapEntry.getValue().size());
+		int total = 0;
 
-			JFXButton button = new JFXButton("View");
-			button.setTextFill(Color.DODGERBLUE);
-			button.setOnAction(evt -> tableContainer.getChildren().setAll(getTable(mapEntry.getValue())));
-
-			listContainer.add(label, 0, i);
-			listContainer.add(amount, 1, i);
-			listContainer.add(button, 2, i);
-
-			i++;
+		ObservableList<FamilyGrouping> allFamilies = null; // used only if grouping families
+		if (familyGrouping) {
+			allFamilies = FXCollections.observableArrayList();
 		}
 
-		if (results.size() > 1)
-			listContainer.add(viewAll, 1, i);
+		for (Map.Entry<String, ObservableList<Entry>> mapEntry : results.entrySet()) {
+			Label label;
+			Label amount;
+			JFXButton button = new JFXButton("View");
 
-		getChildren().addAll(listContainer, tableContainer);
-		setPrefSize(700, 600);
-	}
+			if (familyGrouping) {
+				ObservableList<FamilyGrouping> family = group(mapEntry.getValue());
+				allFamilies.addAll(family);
 
-	private TableView<Entry> getTable(ObservableList<Entry> items) {
+				label = new Label("    " + mapEntry.getKey() + ":");
+				amount = new Label("" + family.size());
 
-		TableView<Entry> table = new TableView<>();
-		table.setOnKeyPressed(evt -> {
-			if (evt.getCode() == KeyCode.TAB)
-				evt.consume(); // don't move focus off checkbox
-		});
+				button.setOnAction(evt -> {
+					TableView<FamilyGrouping> table = getFamilyTable(family);
+					showStage(table, mapEntry.getKey());
+				});
 
-		table.setEditable(true);
-		table.setTableMenuButtonVisible(true);
+				total += family.size();
+			} else {
+				label = new Label("    " + mapEntry.getKey() + ":");
+				amount = new Label("" + mapEntry.getValue().size());
 
-		TableColumn<Entry, Boolean> select = new TableColumn<>("Select");
-		select.setEditable(true);
+				button.setOnAction(evt -> {
+					TableView<Entry> table = getTable(mapEntry.getValue());
+					showStage(table, mapEntry.getKey());
+				});
 
-		CheckBox columnBox = new CheckBox();
-		columnBox.setTranslateX(2);
-		columnBox.setFocusTraversable(false);
-		columnBox.setOnAction(evt -> items.forEach(entry -> entry.setSelected(columnBox.isSelected())));
+				total += mapEntry.getValue().size();
+			}
 
-		select.setGraphic(columnBox);
-		select.setCellFactory(col -> {
-			CheckBoxTableCell<Entry, Boolean> cell = new CheckBoxTableCell<>();
+			button.setVisible(mapEntry.getValue().size() > 0);
 
-			cell.itemProperty().addListener((obs, ov, nv) -> {
-				long selectCount = items.stream().filter(entry -> entry.isSelected()).count();
-				if (selectCount == 0) {
-					columnBox.setSelected(false);
-					columnBox.setIndeterminate(false);
-				} else if (selectCount == items.size()) {
-					columnBox.setSelected(true);
-					columnBox.setIndeterminate(false);
+			grid.add(label, 0, i);
+			grid.add(amount, 1, i);
+			grid.add(button, 2, i);
+
+			i++;
+
+		}
+
+		if (results.size() > 1) {
+
+			JFXButton viewAll = new JFXButton("View All");
+
+			ObservableList<FamilyGrouping> allFamilies2 = allFamilies;
+			viewAll.setOnAction(evt -> {
+				if (familyGrouping) {
+					TableView<FamilyGrouping> table = getFamilyTable(allFamilies2);
+					showStage(table, "All");
 				} else {
-					columnBox.setSelected(false);
-					columnBox.setIndeterminate(true);
+					ObservableList<Entry> all = FXCollections.observableArrayList();
+
+					for (Map.Entry<String, ObservableList<Entry>> mapEntry : results.entrySet()) {
+						all.addAll(mapEntry.getValue());
+					}
+
+					TableView<Entry> table = getTable(all);
+					showStage(table, "All");
 				}
 
 			});
-			return cell;
+
+			grid.add(new Separator(), 0, i, 3, 1);
+			i++;
+
+			grid.add(new Label("    Total:"), 0, i);
+			grid.add(new Label(total + ""), 1, i);
+			grid.add(viewAll, 2, i);
+			i++;
+		}
+
+		getChildren().addAll(grid);
+	}
+
+	private TableView<FamilyGrouping> getFamilyTable(ObservableList<FamilyGrouping> items) {
+		TableView<FamilyGrouping> table = TableViewUtils.getFamilyTable(items);
+
+		ContextMenu menu = new ContextMenu();
+		MenuItem export = new MenuItem("Export Selected");
+		export.setOnAction(evt -> TableViewUtils.exportSelectableToExcel(table));
+		export.disableProperty().bind(new BooleanBinding() {
+
+			{
+				items.forEach(i -> bind(i.selectedProperty()));
+			}
+
+			@Override
+			protected boolean computeValue() {
+				return items.stream().noneMatch(item -> item.isSelected());
+			}
+
 		});
-		select.setCellValueFactory(new PropertyValueFactory<>("selected"));
-		select.setMaxWidth(30);
-		select.setMinWidth(30);
 
-		TableColumn<Entry, String> id = new TableColumn<>("ID");
-		id.setCellValueFactory(new PropertyValueFactory<>("id"));
+		menu.getItems().add(export);
+		table.setContextMenu(menu);
 
-		TableColumn<Entry, String> gender = new TableColumn<>("Gender");
-		gender.setCellValueFactory(new PropertyValueFactory<>("gender"));
+		return table;
+	}
 
-		TableColumn<Entry, String> firstName = new TableColumn<>("First");
-		firstName.setCellValueFactory(new PropertyValueFactory<>("firstName"));
+	private ObservableList<FamilyGrouping> group(List<Entry> entries) {
+		entries.sort((e1, e2) -> e1.getPhone().compareTo(e2.getPhone()));
 
-		TableColumn<Entry, String> lastName = new TableColumn<>("Last");
-		lastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
+		ObservableList<FamilyGrouping> family = FXCollections.observableArrayList();
 
-		table.getColumns().addAll(Arrays.asList(select, id, gender, firstName, lastName));
-		table.setItems(items);
+		Entry prev = null;
+		List<Entry> singleFamily = new ArrayList<>();
+
+		for (Entry e : entries) {
+			if (prev == null) {
+				singleFamily.add(e);
+				prev = e;
+				continue;
+			}
+
+			if (!prev.getPhone().isEmpty() && prev.getPhone().equals(e.getPhone())) {
+				singleFamily.add(e);
+			} else {
+				try {
+					family.add(new FamilyGrouping(singleFamily));
+				} catch (Exception e1) {
+					System.out.println(e1.getMessage());
+				}
+				singleFamily = new ArrayList<>();
+				singleFamily.add(e);
+			}
+
+			prev = e;
+		}
+
+		return family;
+	}
+
+	void showStage(Node n, String title) {
+		Stage stage = new Stage();
+		stage.setTitle(title);
+		stage.setMaximized(true);
+		stage.getIcons().add(Main.ICON);
+
+		stage.setScene(new Scene(new StackPane(n)));
+		stage.showAndWait();
+	}
+
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMMM d, ''yy")
+			.withZone(ZoneId.systemDefault());
+
+	private TableView<Entry> getTable(ObservableList<Entry> items) {
+
+		TableView<Entry> table = TableViewUtils.getTable(items);
+
+		ContextMenu menu = new ContextMenu();
+		MenuItem export = new MenuItem("Export Selected");
+		export.setOnAction(evt -> TableViewUtils.exportToExcel(table));
+		export.disableProperty().bind(new BooleanBinding() {
+
+			{
+				items.forEach(i -> bind(i.selectedProperty()));
+			}
+
+			@Override
+			protected boolean computeValue() {
+				return items.stream().noneMatch(item -> item.isSelected());
+			}
+
+		});
+
+		menu.getItems().add(export);
+		table.setContextMenu(menu);
 
 		return table;
 	}

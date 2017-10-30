@@ -1,15 +1,10 @@
 package org.hafotzastehillim.fx.cell;
 
-import javafx.beans.value.ObservableNumberValue;
 import javafx.geometry.Pos;
 import javafx.scene.control.CheckBox;
 import javafx.scene.control.ListCell;
 
-public class GiftEditorCell extends RoundEdgedListCell<EditorData<Boolean>> {
-
-	public GiftEditorCell(ObservableNumberValue itemSize) {
-		super(itemSize);
-	}
+public class GiftEditorCell extends ListCell<EditorData<Boolean>> {
 
 	@Override
 	protected void updateItem(EditorData<Boolean> item, boolean empty) {
