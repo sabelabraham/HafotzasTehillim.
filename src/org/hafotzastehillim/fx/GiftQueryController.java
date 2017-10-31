@@ -31,7 +31,7 @@ public class GiftQueryController {
 	public void run(ActionEvent event) {
 
 		ObservableList<Entry> all = FXCollections.observableArrayList();
-		Model.getInstance().getSpreadsheet().searchEntries("100", all, (q, v, col) -> Integer.parseInt(v) >= 100, Column.TOTAL_POINTS.ordinal());
+		Model.getInstance().getSpreadsheet().searchEntries("100", all, (q, v, col) -> !v.isEmpty() && Integer.parseInt(v) >= 100, Column.TOTAL_POINTS.ordinal());
 
 		Model.getInstance().getSpreadsheet().searchService().setOnSucceeded(evt -> {
 			Model.getInstance().getSpreadsheet().searchService().setOnSucceeded(null);
