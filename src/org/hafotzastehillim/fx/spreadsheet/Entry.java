@@ -538,7 +538,6 @@ public class Entry implements Selectable, Comparable<Entry> {
 		}
 	}
 
-	@SuppressWarnings("restriction")
 	private void loadDetails() {
 		if (tab == -1) {
 			throw new IllegalStateException("Tab value not set.");
@@ -554,32 +553,27 @@ public class Entry implements Selectable, Comparable<Entry> {
 			String phone = data.get(Column.PHONE.ordinal());
 			try {
 				PhoneNumber pn = util.parse(phone, "US");
-				if (!Model.getInstance().isIgnoreInvalidPhone() && !util.isValidNumber(pn)) {
-					throw new Exception();
-				}
-
 				phone = util.format(pn, PhoneNumberFormat.NATIONAL);
 
 				data.set(Column.PHONE.ordinal(), phone);
+				if (!Model.getInstance().isIgnoreInvalidPhone() && !util.isValidNumber(pn)) {
+					AsYouTypeFormatter fmt = util.getAsYouTypeFormatter("US");
+					String input = "";
+					for (char c : phone.toCharArray())
+						input = fmt.inputDigit(c);
+
+					String p = input;
+					Util.createAlert(AlertType.WARNING, "Invalid Phone", "Invalid Phone Number",
+							"Entry \"" + data.get(Column.ID_NUMBER.ordinal()) + "\" has an invalid phone number\n" + p,
+							ButtonType.OK);
+				}
+
 			} catch (NumberParseException e) {
 				if (!Model.getInstance().isIgnoreInvalidPhone()) {
-					PlatformImpl
-							.runAndWait(() -> Util.createAlert(
-									AlertType.WARNING, "Missing Phone", "Missing Phone Number", "Entry \""
-											+ data.get(Column.ID_NUMBER.ordinal()) + "\" phone number is empty",
-									ButtonType.OK));
+					Util.createAlert(AlertType.WARNING, "Missing Phone", "Missing Phone Number",
+							"Entry \"" + data.get(Column.ID_NUMBER.ordinal()) + "\" phone number is empty",
+							ButtonType.OK);
 				}
-			} catch (Exception e) {
-				AsYouTypeFormatter fmt = util.getAsYouTypeFormatter("US");
-				String input = "";
-				for(char c : phone.toCharArray())
-					input = fmt.inputDigit(c);
-				
-				String p = input;
-				PlatformImpl
-						.runAndWait(() -> Util.createAlert(AlertType.WARNING, "Invalid Phone", "Invalid Phone Number",
-								"Entry \"" + data.get(Column.ID_NUMBER.ordinal()) + "\" has an invalid phone number\n" + p,
-								ButtonType.OK));
 			}
 		}
 

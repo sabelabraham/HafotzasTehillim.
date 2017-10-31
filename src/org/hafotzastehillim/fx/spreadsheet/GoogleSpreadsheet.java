@@ -18,6 +18,8 @@ import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
 import org.hafotzastehillim.fx.Main;
+import org.hafotzastehillim.fx.util.ConnectionState;
+import org.hafotzastehillim.fx.util.Ping;
 import org.hafotzastehillim.fx.util.Search;
 import org.hafotzastehillim.fx.util.Util;
 
@@ -27,6 +29,8 @@ import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
 import com.google.api.services.sheets.v4.model.BatchUpdateValuesRequest;
 import com.google.api.services.sheets.v4.model.ValueRange;
+import com.sun.javafx.application.PlatformImpl;
+
 import javafx.application.Platform;
 import javafx.beans.value.WritableIntegerValue;
 import javafx.beans.value.WritableValue;
@@ -34,6 +38,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.concurrent.Service;
 import javafx.concurrent.Task;
+import javafx.scene.control.ButtonType;
 import javafx.scene.control.Alert.AlertType;
 
 public class GoogleSpreadsheet implements Spreadsheet {
@@ -42,7 +47,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	private String sheetId;
 
 	private List<String> tabs;
-	private ObservableList<String> cities;
+	// private ObservableList<String> cities;
 	private Map<Integer, List<List<Object>>> cache;
 
 	private Service<Void> search;
@@ -68,12 +73,13 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		this.service = service;
 
 		tabs = Arrays.stream(Tab.values()).map(tab -> tab.toString()).collect(Collectors.toList());
-		cities = FXCollections.observableArrayList();
+		// cities = FXCollections.observableArrayList();
 
 		cache = new ConcurrentHashMap<>();
 		updates = new LinkedBlockingQueue<>();
 
 		updater = new Thread() {
+
 			@Override
 			public void run() {
 				while (true) {
@@ -254,7 +260,12 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		} catch (IOException e) {
-			Util.showErrorDialog(e);
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nLoad Failed");
+			} else {
+				Util.showErrorDialog(e);
+			} 
 		}
 		if (response == null)
 			return "";
@@ -263,6 +274,68 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		placeInCache(sheet, row, column, cell);
 
 		return cell;
+	}
+
+	// FIXME add placeInCache()
+	public List<List<Object>> doLoadRange(String range) {
+	
+		ValueRange response = null;
+		try {
+			response = service.spreadsheets().values().get(sheetId, range).execute();
+		} catch (GoogleJsonResponseException e) {
+			if (e.getStatusCode() == 403) {
+				Platform.runLater(() -> Util.createAlert(AlertType.ERROR, "Access Denied", "Access Denied",
+						"You don't have the valid credentials to access the Point Entry database"));
+			} else {
+				Util.showErrorDialog(e);
+			}
+		} catch (IOException e) {
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nLoad Failed");
+			} else {
+				Main.pushNotification("Load Failed");
+				Util.showErrorDialog(e);
+			}
+		}
+	
+		if (response == null)
+			return Arrays.asList(Arrays.asList());
+	
+		return response.getValues();
+	}
+
+	public List<List<Object>> doLoadRange(int sheet, String range) {
+		range = tabs.get(sheet) + "!" + range;
+		return doLoadRange(range);
+	}
+
+	public List<List<List<Object>>> doLoadRangeBatch(List<String> range) {
+	
+		BatchGetValuesResponse response = null;
+		try {
+			response = service.spreadsheets().values().batchGet(sheetId).setRanges(range).execute();
+		} catch (GoogleJsonResponseException e) {
+			if (e.getStatusCode() == 403) {
+				Platform.runLater(() -> Util.createAlert(AlertType.ERROR, "Access Denied", "Access Denied",
+						"You don't have the valid credentials to access the Point Entry database"));
+			} else {
+				Util.showErrorDialog(e);
+			}
+		} catch (IOException e) {
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nLoad Failed");
+			} else {
+				Main.pushNotification("Load Failed");
+				Util.showErrorDialog(e);
+			}
+		}
+	
+		if (response == null)
+			return Arrays.asList(Arrays.asList());
+	
+		return response.getValueRanges().stream().map(vr -> vr.getValues()).collect(Collectors.toList());
 	}
 
 	public boolean doUpdateCellValue(int sheet, int row, int column, String value) {
@@ -287,68 +360,17 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		} catch (IOException e) {
-			Main.pushNotification("Update Failed");
-			Util.showErrorDialog(e);
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nUpdate Failed");
+			} else {
+				Main.pushNotification("Update Failed");
+				Util.showErrorDialog(e);
+			}
 		}
 
 		return false;
 
-	}
-
-	public void pushUpdate(Update update) {
-		updates.add(update);
-	}
-
-	// FIXME add placeInCache()
-	public List<List<Object>> doLoadRange(String range) {
-
-		ValueRange response = null;
-		try {
-			response = service.spreadsheets().values().get(sheetId, range).execute();
-		} catch (GoogleJsonResponseException e) {
-			if (e.getStatusCode() == 403) {
-				Platform.runLater(() -> Util.createAlert(AlertType.ERROR, "Access Denied", "Access Denied",
-						"You don't have the valid credentials to access the Point Entry database"));
-			} else {
-				Util.showErrorDialog(e);
-			}
-		} catch (IOException e) {
-			Main.pushNotification("Load Failed");
-			Util.showErrorDialog(e);
-		}
-
-		if (response == null)
-			return Arrays.asList(Arrays.asList());
-
-		return response.getValues();
-	}
-
-	public List<List<Object>> doLoadRange(int sheet, String range) {
-		range = tabs.get(sheet) + "!" + range;
-		return doLoadRange(range);
-	}
-
-	public List<List<List<Object>>> doLoadRangeBatch(List<String> range) {
-
-		BatchGetValuesResponse response = null;
-		try {
-			response = service.spreadsheets().values().batchGet(sheetId).setRanges(range).execute();
-		} catch (GoogleJsonResponseException e) {
-			if (e.getStatusCode() == 403) {
-				Platform.runLater(() -> Util.createAlert(AlertType.ERROR, "Access Denied", "Access Denied",
-						"You don't have the valid credentials to access the Point Entry database"));
-			} else {
-				Util.showErrorDialog(e);
-			}
-		} catch (IOException e) {
-			Main.pushNotification("Load Failed");
-			Util.showErrorDialog(e);
-		}
-
-		if (response == null)
-			return Arrays.asList(Arrays.asList());
-
-		return response.getValueRanges().stream().map(vr -> vr.getValues()).collect(Collectors.toList());
 	}
 
 	public boolean doUpdateRange(String range, List<List<Object>> values) {
@@ -367,8 +389,13 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		} catch (IOException e) {
-			Main.pushNotification("Update Failed");
-			Util.showErrorDialog(e);
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nUpdate Failed");
+			} else {
+				Main.pushNotification("Update Failed");
+				Util.showErrorDialog(e);
+			}
 		}
 
 		return false;
@@ -400,8 +427,13 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		} catch (IOException e) {
-			Main.pushNotification("Update Failed");
-			Util.showErrorDialog(e);
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nUpdate Failed");
+			} else {
+				Main.pushNotification("Update Failed");
+				Util.showErrorDialog(e);
+			}
 		}
 
 		return false;
@@ -451,8 +483,13 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		} catch (IOException e) {
-			Main.pushNotification("Update Failed");
-			Util.showErrorDialog(e);
+			if (!Ping.pingNow()) {
+				Util.createAlert(AlertType.ERROR, "Connection", "No Connection",
+						"Point Entry could not connect to the Internet.\nInsert Failed");
+			} else {
+				Main.pushNotification("Update Failed");
+				Util.showErrorDialog(e);
+			}
 		}
 
 		return -1;
@@ -470,6 +507,10 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		list.add(value);
 
 		return doAppendRow(sheet, list);
+	}
+
+	public void pushUpdate(Update update) {
+		updates.add(update);
 	}
 
 	public void placeInCache(int sheet, int row, int column, String value) {
@@ -520,8 +561,9 @@ public class GoogleSpreadsheet implements Spreadsheet {
 
 		for (int i = 0; i < values.size(); i++) {
 			// Ignore formulae since it's very rare to need the formula text but rather the
-			// result value. You can force inserting formula string by placeInCache(int, int, int, String);
-			
+			// result value. You can force inserting formula string by placeInCache(int,
+			// int, int, String);
+
 			if (values.get(i).toString().startsWith("="))
 				values.set(i, "");
 		}
@@ -950,13 +992,6 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		}
 
 		return load;
-	}
-
-	private int parseTab(String range) {
-		range = range.replace("'", "");
-
-		String tab = range.substring(0, range.indexOf("!"));
-		return tabs.indexOf(tab);
 	}
 
 	private int assumingValidId(int tab, int row) {
