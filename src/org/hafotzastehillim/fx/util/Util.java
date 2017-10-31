@@ -11,6 +11,7 @@ import org.hafotzastehillim.fx.Main;
 import org.hafotzastehillim.fx.Model;
 
 import com.jfoenix.controls.JFXButton;
+import com.sun.javafx.application.PlatformImpl;
 
 import javafx.application.Platform;
 import javafx.beans.binding.Bindings;
@@ -114,7 +115,7 @@ public class Util {
 
 	public static void showErrorDialog(Throwable t) {
 		t.printStackTrace();
-		
+
 		StringWriter out = new StringWriter();
 		t.printStackTrace(new PrintWriter(out));
 
@@ -126,63 +127,63 @@ public class Util {
 		area.setPrefRowCount(45);
 		area.setStyle("-fx-text-fill: red;");
 
-		if (Platform.isFxApplicationThread()) {
-			createDialog(area, "Error", ButtonType.OK);
-		} else {
-			Platform.runLater(() -> createDialog(area, "Error", ButtonType.OK));
-		}
+		createDialog(area, "Error", ButtonType.OK);
 	}
 
 	public static Optional<ButtonType> createDialog(Node content, String title, ButtonType... buttonTypes) {
 		return createDialog(content, title, new SimpleBooleanProperty(false), buttonTypes);
 	}
 
+	@SuppressWarnings("restriction")
 	public static Optional<ButtonType> createDialog(Node content, String title, ObservableValue<Boolean> disableButtons,
 			ButtonType... buttonTypes) {
 
-		Stage dialog = new Stage();
-		dialog.getIcons().add(Main.ICON);
-		dialog.initModality(Modality.APPLICATION_MODAL);
-		dialog.setResizable(false);
-		dialog.setTitle(title);
-
-		List<Button> buttons = new ArrayList<>(buttonTypes.length);
 		ButtonType[] response = new ButtonType[1];
 
-		for (ButtonType type : buttonTypes) {
-			Button b = new JFXButton(type.getText());
-			b.setDefaultButton(type.getButtonData().isDefaultButton());
-			b.setCancelButton(type.getButtonData().isCancelButton());
-			b.disableProperty().bind(disableButtons);
+		PlatformImpl.runAndWait(() -> {
+			Stage dialog = new Stage();
+			dialog.getIcons().add(Main.ICON);
+			dialog.initModality(Modality.APPLICATION_MODAL);
+			dialog.setResizable(false);
+			dialog.setTitle(title);
 
-			b.setOnAction(evt -> {
-				response[0] = type;
-				dialog.close();
-			});
+			List<Button> buttons = new ArrayList<>(buttonTypes.length);
 
-			buttons.add(b);
-		}
+			for (ButtonType type : buttonTypes) {
+				Button b = new JFXButton(type.getText());
+				b.setDefaultButton(type.getButtonData().isDefaultButton());
+				b.setCancelButton(type.getButtonData().isCancelButton());
+				b.disableProperty().bind(disableButtons);
 
-		HBox buttonBox = new HBox();
-		buttonBox.getChildren().addAll(buttons);
-		buttonBox.setAlignment(Pos.CENTER_RIGHT);
-		buttonBox.setSpacing(10);
-		buttonBox.setPadding(new Insets(10));
+				b.setOnAction(evt -> {
+					response[0] = type;
+					dialog.close();
+				});
 
-		VBox vbox = new VBox();
-		vbox.getChildren().add(content);
+				buttons.add(b);
+			}
 
-		if (buttonTypes.length > 0)
-			vbox.getChildren().addAll(new Separator(), buttonBox);
+			HBox buttonBox = new HBox();
+			buttonBox.getChildren().addAll(buttons);
+			buttonBox.setAlignment(Pos.CENTER_RIGHT);
+			buttonBox.setSpacing(10);
+			buttonBox.setPadding(new Insets(10));
 
-		Scene scene = new Scene(new StackPane(vbox));
-		dialog.setScene(scene);
+			VBox vbox = new VBox();
+			vbox.getChildren().add(content);
 
-		if (buttons.size() > 0) {
-			dialog.setOnShown(evt -> buttons.get(0).requestFocus());
-		}
+			if (buttonTypes.length > 0)
+				vbox.getChildren().addAll(new Separator(), buttonBox);
 
-		dialog.showAndWait();
+			Scene scene = new Scene(new StackPane(vbox));
+			dialog.setScene(scene);
+
+			if (buttons.size() > 0) {
+				dialog.setOnShown(evt -> buttons.get(0).requestFocus());
+			}
+
+			dialog.showAndWait();
+		});
 
 		return Optional.ofNullable(response[0]);
 	}
@@ -190,47 +191,59 @@ public class Util {
 	/*
 	 * https://stackoverflow.com/a/36949596
 	 */
+	@SuppressWarnings("restriction")
 	public static Optional<ButtonType> createAlertWithOptOut(AlertType type, String title, String headerText,
-			String message,
+			String message, String optOutMessage, Consumer<Boolean> optOutAction, ButtonType... buttonTypes) {
 
-			String optOutMessage, Consumer<Boolean> optOutAction, ButtonType... buttonTypes) {
-		Alert alert = new Alert(type);
+		List<Optional<ButtonType>> response = new ArrayList<Optional<ButtonType>>();
 
-		alert.getDialogPane().applyCss();
-		Node graphic = alert.getDialogPane().getGraphic();
+		PlatformImpl.runAndWait(() -> {
+			Alert alert = new Alert(type);
 
-		alert.setDialogPane(new DialogPane() {
-			@Override
-			protected Node createDetailsButton() {
-				CheckBox optOut = new CheckBox();
-				optOut.setText(optOutMessage);
-				optOut.setOnAction(e -> optOutAction.accept(optOut.isSelected()));
-				return optOut;
-			}
+			alert.getDialogPane().applyCss();
+			Node graphic = alert.getDialogPane().getGraphic();
+
+			alert.setDialogPane(new DialogPane() {
+				@Override
+				protected Node createDetailsButton() {
+					CheckBox optOut = new CheckBox();
+					optOut.setText(optOutMessage);
+					optOut.setOnAction(e -> optOutAction.accept(optOut.isSelected()));
+					return optOut;
+				}
+			});
+			alert.getDialogPane().getButtonTypes().addAll(buttonTypes);
+			alert.getDialogPane().setContentText(message);
+			// Fool the dialog into thinking there is some expandable content
+			// a Group won't take up any space if it has no children
+			alert.getDialogPane().setExpandableContent(new Group());
+			alert.getDialogPane().setExpanded(true);
+			// Reset the dialog graphic using the default style
+			alert.getDialogPane().setGraphic(graphic);
+			alert.setTitle(title);
+			alert.setHeaderText(headerText);
+			alert.setResizable(false);
+			alert.initOwner(Model.getInstance().getPrimaryStage());
+			response.add(alert.showAndWait());
 		});
-		alert.getDialogPane().getButtonTypes().addAll(buttonTypes);
-		alert.getDialogPane().setContentText(message);
-		// Fool the dialog into thinking there is some expandable content
-		// a Group won't take up any space if it has no children
-		alert.getDialogPane().setExpandableContent(new Group());
-		alert.getDialogPane().setExpanded(true);
-		// Reset the dialog graphic using the default style
-		alert.getDialogPane().setGraphic(graphic);
-		alert.setTitle(title);
-		alert.setHeaderText(headerText);
-		alert.setResizable(false);
-		alert.initOwner(Model.getInstance().getPrimaryStage());
 
-		return alert.showAndWait();
+		return response.get(0);
 	}
 
+	@SuppressWarnings("restriction")
 	public static Optional<ButtonType> createAlert(AlertType type, String title, String headerText, String message,
 			ButtonType... buttons) {
-		Alert alert = new Alert(type, message, buttons);
-		alert.setTitle(title);
-		alert.setHeaderText(headerText);
-		alert.initOwner(Model.getInstance().getPrimaryStage());
+		List<Optional<ButtonType>> response = new ArrayList<Optional<ButtonType>>();
 
-		return alert.showAndWait();
+		PlatformImpl.runAndWait(() -> {
+			Alert alert = new Alert(type, message, buttons);
+			alert.setTitle(title);
+			alert.setHeaderText(headerText);
+			alert.initOwner(Model.getInstance().getPrimaryStage());
+
+			response.add(alert.showAndWait());
+		});
+
+		return response.get(0);
 	}
 }
