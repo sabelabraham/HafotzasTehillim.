@@ -18,9 +18,7 @@ import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
 import javafx.geometry.Insets;
-import javafx.geometry.NodeOrientation;
 import javafx.geometry.Pos;
-import javafx.geometry.Side;
 import javafx.scene.control.ButtonType;
 import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
@@ -180,8 +178,9 @@ public class DetailsPane extends VBox {
 	public static void showNewDialog() {
 		DetailsPane pane = new DetailsPane(null);
 		Util.createDialog(pane, "New Member",
-				pane.getController().cityYiddish.getSelectionModel().selectedItemProperty().isNull(), ButtonType.CANCEL,
-				ButtonType.OK).filter(b -> b == ButtonType.OK).ifPresent(b -> {
+				pane.getController().phone.textProperty().isEmpty()
+						.or(pane.getController().cityYiddish.getEditor().textProperty().isEmpty()),
+				ButtonType.CANCEL, ButtonType.OK).filter(b -> b == ButtonType.OK).ifPresent(b -> {
 					Entry e = pane.getController().getEntry();
 
 					e.persist(row -> {
@@ -206,8 +205,10 @@ public class DetailsPane extends VBox {
 
 	public static void showDialog(Entry entry) {
 		DetailsPane pane = new DetailsPane(entry);
-		ButtonType type = Util.createDialog(pane, "Details", ButtonType.CANCEL, ButtonType.APPLY)
-				.filter(b -> b == ButtonType.APPLY).orElse(null);
+		ButtonType type = Util.createDialog(pane, "Details",
+				pane.getController().phone.textProperty().isEmpty()
+						.or(pane.getController().cityYiddish.getEditor().textProperty().isEmpty()),
+				ButtonType.CANCEL, ButtonType.APPLY).filter(b -> b == ButtonType.APPLY).orElse(null);
 
 		Entry e = pane.getController().getEntry();
 		if (type == ButtonType.APPLY) {
@@ -245,17 +246,20 @@ public class DetailsPane extends VBox {
 		new FamilyGrouping(entries);// validates and binds values
 
 		TabPane family = new TabPane();
+		DetailsPane any = null;
 
 		for (Entry e : entries) {
 			Tab t = new Tab(e.getFirstNameYiddish());
 			t.setClosable(false);
-			t.setContent(new DetailsPane(e));
+			t.setContent(any = new DetailsPane(e));
 
 			family.getTabs().add(t);
 		}
 
-		ButtonType type = Util.createDialog(family, "Details", ButtonType.CANCEL, ButtonType.APPLY)
-				.filter(b -> b == ButtonType.APPLY).orElse(null);
+		ButtonType type = Util.createDialog(family, "Details",
+				any.getController().phone.textProperty().isEmpty()
+						.or(any.getController().cityYiddish.getEditor().textProperty().isEmpty()),
+				ButtonType.CANCEL, ButtonType.APPLY).filter(b -> b == ButtonType.APPLY).orElse(null);
 		for (Tab t : family.getTabs()) {
 			DetailsPane pane = (DetailsPane) t.getContent();
 			Entry e = pane.getController().getEntry();

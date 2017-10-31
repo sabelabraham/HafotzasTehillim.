@@ -66,7 +66,7 @@ public class FormController {
 	@FXML
 	private TextField school;
 	@FXML
-	private TextField phone;
+	TextField phone;
 	@FXML
 	private TextField fatherName;
 	@FXML
