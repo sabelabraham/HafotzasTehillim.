@@ -26,7 +26,7 @@
 }
 
 
-.table-row-cell:odd:filled:selected{
+.table-row-cell:filled:selected:odd {
   -fx-background: -fx-control-inner-background-alt;
 }
 

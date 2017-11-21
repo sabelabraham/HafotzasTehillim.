@@ -3,13 +3,18 @@
 <?import com.jfoenix.controls.JFXButton?>
 <?import java.lang.String?>
 <?import javafx.geometry.Insets?>
+<?import javafx.scene.Group?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Tooltip?>
 <?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.Pane?>
+<?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
 
-<HBox alignment="CENTER_LEFT" styleClass="top-bar" xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hafotzastehillim.fx.TopBarController">
+<fx:root alignment="CENTER_LEFT" styleClass="top-bar" type="HBox" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
 	<children>
-		<JFXButton fx:id="report" focusTraversable="false" onAction="#reportAction">
+		<JFXButton fx:id="report" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#reportAction">
 			<graphic>
 				<SVGPath content="M16 6l2.29 2.29-4.88 4.88-4-4L2 16.59 3.41 18l6-6 4 4 6.3-6.29L22 12V6z">
 					<styleClass>
@@ -18,8 +23,11 @@
 					</styleClass>
 				</SVGPath>
 			</graphic>
+         <tooltip>
+            <Tooltip text="Reports" />
+         </tooltip>
 		</JFXButton>
-		<JFXButton fx:id="gift" focusTraversable="false" layoutX="10.0" layoutY="10.0" onAction="#giftAction">
+		<JFXButton fx:id="gift" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="10.0" layoutY="10.0" onAction="#giftAction">
 			<graphic>
 				<SVGPath content="M20 6h-2.18c.11-.31.18-.65.18-1 0-1.66-1.34-3-3-3-1.05 0-1.96.54-2.5 1.35l-.5.67-.5-.68C10.96 2.54 10.05 2 9 2 7.34 2 6 3.34 6 5c0 .35.07.69.18 1H4c-1.11 0-1.99.89-1.99 2L2 19c0 1.11.89 2 2 2h16c1.11 0 2-.89 2-2V8c0-1.11-.89-2-2-2zm-5-2c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zM9 4c.55 0 1 .45 1 1s-.45 1-1 1-1-.45-1-1 .45-1 1-1zm11 15H4v-2h16v2zm0-5H4V8h5.08L7 10.83 8.62 12 11 8.76l1-1.36 1 1.36L15.38 12 17 10.83 14.92 8H20v6z" translateY="-2.0">
 					<styleClass>
@@ -28,18 +36,45 @@
 					</styleClass>
 				</SVGPath>
 			</graphic>
+         <tooltip>
+            <Tooltip text="Gifts" />
+         </tooltip>
 		</JFXButton>
-      <JFXButton fx:id="settings" focusTraversable="false" onAction="#settingsAction">
+      <JFXButton fx:id="notes" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#notesAction">
+         <graphic>
+            <SVGPath content="M17 10H7v2h10v-2zm2-7h-1V1h-2v2H8V1H6v2H5c-1.11 0-1.99.9-1.99 2L3 19c0 1.1.89 2 2 2h14c1.1 0 2-.9 2-2V5c0-1.1-.9-2-2-2zm0 16H5V8h14v11zm-5-5H7v2h7v-2z" styleClass="svg-path" />
+         </graphic>
+         <tooltip>
+            <Tooltip text="All Notes" />
+         </tooltip>
+      </JFXButton>
+      <JFXButton fx:id="print" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#printAction">
+         <graphic>
+            <SVGPath content="M19 8H5c-1.66 0-3 1.34-3 3v6h4v4h12v-4h4v-6c0-1.66-1.34-3-3-3zm-3 11H8v-5h8v5zm3-7c-.55 0-1-.45-1-1s.45-1 1-1 1 .45 1 1-.45 1-1 1zm-1-9H6v4h12V3z">
+               <styleClass>
+                  <String fx:value="svg-path" />
+                  <String fx:value="print-path" />
+               </styleClass>
+            </SVGPath>
+         </graphic>
+         <tooltip>
+            <Tooltip text="Print Statement" />
+         </tooltip>
+      </JFXButton>
+      <JFXButton fx:id="settings" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#settingsAction">
          <graphic>
             <SVGPath content="M19.43 12.98c.04-.32.07-.64.07-.98s-.03-.66-.07-.98l2.11-1.65c.19-.15.24-.42.12-.64l-2-3.46c-.12-.22-.39-.3-.61-.22l-2.49 1c-.52-.4-1.08-.73-1.69-.98l-.38-2.65C14.46 2.18 14.25 2 14 2h-4c-.25 0-.46.18-.49.42l-.38 2.65c-.61.25-1.17.59-1.69.98l-2.49-1c-.23-.09-.49 0-.61.22l-2 3.46c-.13.22-.07.49.12.64l2.11 1.65c-.04.32-.07.65-.07.98s.03.66.07.98l-2.11 1.65c-.19.15-.24.42-.12.64l2 3.46c.12.22.39.3.61.22l2.49-1c.52.4 1.08.73 1.69.98l.38 2.65c.03.24.24.42.49.42h4c.25 0 .46-.18.49-.42l.38-2.65c.61-.25 1.17-.59 1.69-.98l2.49 1c.23.09.49 0 .61-.22l2-3.46c.12-.22.07-.49-.12-.64l-2.11-1.65zM12 15.5c-1.93 0-3.5-1.57-3.5-3.5s1.57-3.5 3.5-3.5 3.5 1.57 3.5 3.5-1.57 3.5-3.5 3.5z">
                <styleClass>
                   <String fx:value="svg-path" />
-                  <String fx:value="gift-path" />
+                  <String fx:value="settings-path" />
                </styleClass>
             </SVGPath>
          </graphic>
+         <tooltip>
+            <Tooltip text="Settings" />
+         </tooltip>
       </JFXButton>
-		<JFXButton fx:id="connection" focusTraversable="false" layoutX="62.0" layoutY="10.0" onAction="#connectionAction">
+		<JFXButton fx:id="connection" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="62.0" layoutY="10.0" onAction="#connectionAction">
 			<graphic>
 				<SVGPath content="M12 2C6.48 2 2 6.48 2 12s4.48 10 10 10 10-4.48 10-10S17.52 2 12 2zm0 3c1.66 0 3 1.34 3 3s-1.34 3-3 3-3-1.34-3-3 1.34-3 3-3zm0 14.2c-2.5 0-4.71-1.28-6-3.22.03-1.99 4-3.08 6-3.08 1.99 0 5.97 1.09 6 3.08-1.29 1.94-3.5 3.22-6 3.22z">
 					<styleClass>
@@ -48,11 +83,42 @@
 					</styleClass>
 				</SVGPath>
 			</graphic>
+         <tooltip>
+            <Tooltip text="Google Login" />
+         </tooltip>
 		</JFXButton>
-		<JFXButton fx:id="refresh" focusTraversable="false" layoutX="114.0"
-			layoutY="10.0" onAction="#refreshAction" />
+		<JFXButton fx:id="refresh" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="114.0" layoutY="10.0" onAction="#refreshAction">
+         <tooltip>
+            <Tooltip text="Reload" />
+         </tooltip></JFXButton>
 		<Pane HBox.hgrow="ALWAYS" />
-		<JFXButton fx:id="newMember" focusTraversable="false" layoutX="166.0" layoutY="10.0" onAction="#newMemberAction">
+      <JFXButton fx:id="notifications" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#notificationsAction">
+         <graphic>
+            <StackPane>
+               <children>
+                  <Group>
+                     <children>
+                        <SVGPath content="M255,510c28.05,0,51-22.95,51-51H204C204,487.05,226.95,510,255,510z M420.75,357V216.75c0-79.05-53.55-142.8-127.5-160.65V38.25C293.25,17.85,275.4,0,255,0c-20.4,0-38.25,17.85-38.25,38.25V56.1c-73.95,17.85-127.5,81.6-127.5,160.65V357l-51,51v25.5h433.5V408L420.75,357z M369.75,382.5h-229.5V216.75C140.25,153,191.25,102,255,102s114.75,51,114.75,114.75V382.5z" scaleX="0.04" scaleY="0.04">
+                           <styleClass>
+                              <String fx:value="svg-path" />
+                              <String fx:value="notes-path" />
+                           </styleClass>
+                        </SVGPath>
+                     </children>
+                  </Group>
+                  <Label fx:id="noteAmountText" alignment="CENTER" prefHeight="15.0" prefWidth="15.0" style="-fx-background-color: transparent, red; -fx-background-insets: 0, 2; -fx-background-radius: 7;" textFill="WHITE" translateX="5.0" translateY="-5.0">
+                     <font>
+                        <Font size="10.0" />
+                     </font>
+                  </Label>
+               </children>
+            </StackPane>
+         </graphic>
+         <tooltip>
+            <Tooltip text="Notifications" />
+         </tooltip>
+      </JFXButton>
+		<JFXButton fx:id="newMember" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" layoutX="166.0" layoutY="10.0" onAction="#newMemberAction">
 			<graphic>
 				<SVGPath content="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z">
 					<styleClass>
@@ -61,9 +127,12 @@
 					</styleClass>
 				</SVGPath>
 			</graphic>
+         <tooltip>
+            <Tooltip text="New Member" />
+         </tooltip>
 		</JFXButton>
 	</children>
 	<padding>
 		<Insets bottom="10.0" left="10.0" right="10.0" />
 	</padding>
-</HBox>
+</fx:root>

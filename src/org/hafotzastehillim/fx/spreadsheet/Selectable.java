@@ -4,9 +4,13 @@ import javafx.beans.property.Property;
 
 public interface Selectable {
 
-	boolean isSelected();
+	default boolean isSelected() {
+		return selectedProperty().getValue();
+	}
 	
-	void setSelected(Boolean bool);
+	default void setSelected(boolean bool) {
+		selectedProperty().setValue(bool);
+	}
 	
 	Property<Boolean> selectedProperty();
 }

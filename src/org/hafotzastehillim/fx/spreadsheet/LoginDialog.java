@@ -19,7 +19,10 @@ import javafx.concurrent.Worker.State;
 import javafx.fxml.FXMLLoader;
 import javafx.scene.Group;
 import javafx.scene.Scene;
+import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.Pane;
+import javafx.scene.layout.StackPane;
 import javafx.scene.shape.Rectangle;
 import javafx.stage.Modality;
 import javafx.stage.Stage;
@@ -30,7 +33,6 @@ public class LoginDialog extends Stage {
 	private LoginController controller;
 	private Pane view;
 	private Rectangle clip;
-
 
 	public LoginDialog(boolean cached) {
 		FXMLLoader loader = new FXMLLoader(getClass().getResource("/resources/fxml/Login.fxml"));
@@ -67,7 +69,13 @@ public class LoginDialog extends Stage {
 			SheetsAPI.stop();
 		});
 
-		setScene(new Scene(new Group(view)));
+		Scene scene = new Scene(new Group(view));
+		setScene(scene);
+
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, evt -> {
+			if (evt.getCode() == KeyCode.ESCAPE)
+				close();
+		});
 
 		setTitle("Google Login");
 		setResizable(false);
@@ -94,7 +102,7 @@ public class LoginDialog extends Stage {
 	public void setCustomMessage(String msg) {
 		controller.setCustomMessage(msg);
 
-		if(msg == null || msg.isEmpty())
+		if (msg == null || msg.isEmpty())
 			setTitle("Google Login");
 		else
 			setTitle("Google Login | " + msg);
@@ -121,31 +129,31 @@ public class LoginDialog extends Stage {
 
 		animation.play();
 	}
-//
-//	private static final Preferences pref = Preferences.userNodeForPackage(LoginDialog.class);
-//	private static final String STAY_SIGNED_IN_KEY = "StaySignedIn";
-//
-//	private static BooleanProperty staySignedIn;
-//
-//	public static BooleanProperty staySignedInProperty() {
-//		if(staySignedIn == null) {
-//			boolean value = pref.getBoolean(STAY_SIGNED_IN_KEY, true);
-//			staySignedIn = new SimpleBooleanProperty(value);
-//			staySignedIn.addListener((obs, ov, nv) -> {
-//				pref.putBoolean(STAY_SIGNED_IN_KEY, staySignedIn.get());
-//			});
-//		}
-//
-//		return staySignedIn;
-//	}
-//
-//	public static final boolean isStaySignedIn() {
-//		return staySignedInProperty().get();
-//	}
-//
-//	public static final void setStaySignedIn(boolean bool) {
-//		staySignedInProperty().set(bool);
-//	}
-
+	//
+	// private static final Preferences pref =
+	// Preferences.userNodeForPackage(LoginDialog.class);
+	// private static final String STAY_SIGNED_IN_KEY = "StaySignedIn";
+	//
+	// private static BooleanProperty staySignedIn;
+	//
+	// public static BooleanProperty staySignedInProperty() {
+	// if(staySignedIn == null) {
+	// boolean value = pref.getBoolean(STAY_SIGNED_IN_KEY, true);
+	// staySignedIn = new SimpleBooleanProperty(value);
+	// staySignedIn.addListener((obs, ov, nv) -> {
+	// pref.putBoolean(STAY_SIGNED_IN_KEY, staySignedIn.get());
+	// });
+	// }
+	//
+	// return staySignedIn;
+	// }
+	//
+	// public static final boolean isStaySignedIn() {
+	// return staySignedInProperty().get();
+	// }
+	//
+	// public static final void setStaySignedIn(boolean bool) {
+	// staySignedInProperty().set(bool);
+	// }
 
 }

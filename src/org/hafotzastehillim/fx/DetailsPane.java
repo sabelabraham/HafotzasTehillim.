@@ -1,11 +1,15 @@
 package org.hafotzastehillim.fx;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.util.Arrays;
 import java.util.List;
 
 import org.hafotzastehillim.fx.cell.GiftEditorCell;
 import org.hafotzastehillim.fx.cell.PointEditorCell;
 import org.hafotzastehillim.fx.cell.ShavuosEditorCell;
+import org.hafotzastehillim.fx.notes.Note;
+import org.hafotzastehillim.fx.notes.NoteManager;
 import org.hafotzastehillim.fx.cell.EditorData;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.spreadsheet.FamilyGrouping;
@@ -13,7 +17,14 @@ import org.hafotzastehillim.fx.util.NoSelectionModel;
 import org.hafotzastehillim.fx.util.Util;
 
 import com.jfoenix.controls.JFXButton;
+import com.jfoenix.controls.JFXTabPane;
 
+import javafx.beans.binding.Bindings;
+import javafx.beans.property.ObjectProperty;
+import javafx.beans.property.SimpleDoubleProperty;
+import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.fxml.FXMLLoader;
@@ -24,6 +35,7 @@ import javafx.scene.control.Label;
 import javafx.scene.control.ListView;
 import javafx.scene.control.Tab;
 import javafx.scene.control.TabPane;
+import javafx.scene.control.Tooltip;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.HBox;
 import javafx.scene.layout.StackPane;
@@ -60,17 +72,21 @@ public class DetailsPane extends VBox {
 		getChildren().add(form);
 
 		pointData = FXCollections.observableArrayList();
-		if (entry != null) {
-			for (int point : entry.getPoints())
-				pointData.add(new EditorData<>(point));
-		}
-
 		ListView<EditorData<Integer>> pointsList = new ListView<>();
 		pointsList.setCellFactory(view -> new PointEditorCell());
 		pointsList.setItems(pointData);
 		pointsList.setSelectionModel(new NoSelectionModel<EditorData<Integer>>());
 		pointsList.setPrefHeight(200);
 		pointsList.setId("points-list");
+
+		if (entry != null) {
+			EditorData<Integer> last = null;
+			for (int point : entry.getPoints())
+				pointData.add(last = new EditorData<>(point));
+
+			if (last != null)
+				pointsList.scrollTo(last);
+		}
 
 		Label pointsLabel = new Label("Weekly Program");
 		JFXButton pointsAdd = new JFXButton("Add");
@@ -79,7 +95,10 @@ public class DetailsPane extends VBox {
 			for (int i = pointData.size(); i < Model.getInstance().getCampaignIndex() - 1; i++)
 				pointData.add(new EditorData<>(0));
 
-			pointData.add(new EditorData<>(0));
+			EditorData<Integer> last = new EditorData<>(0);
+			pointData.add(last);
+
+			pointsList.scrollTo(last);
 		});
 
 		VBox pointsPane = new VBox(10);
@@ -99,11 +118,6 @@ public class DetailsPane extends VBox {
 		// -----------------
 
 		shavuosData = FXCollections.observableArrayList();
-		if (entry != null) {
-			for (int data : entry.getShavuosData())
-				shavuosData.add(new EditorData<>(data));
-		}
-
 		ListView<EditorData<Integer>> shavuosList = new ListView<>();
 		shavuosList.setCellFactory(view -> new ShavuosEditorCell());
 		shavuosList.setItems(shavuosData);
@@ -111,10 +125,24 @@ public class DetailsPane extends VBox {
 		shavuosList.setPrefHeight(200);
 		shavuosList.setId("shavuos-list");
 
+		if (entry != null) {
+			EditorData<Integer> last = null;
+			for (int data : entry.getShavuosData())
+				shavuosData.add(last = new EditorData<>(data));
+
+			if (last != null)
+				shavuosList.scrollTo(last);
+		}
+
 		Label shavuosLabel = new Label("Shavuos Program");
 		JFXButton shavuosAdd = new JFXButton("Add");
 		shavuosAdd.setId("shavuos-add");
-		shavuosAdd.setOnAction(evt -> shavuosData.add(new EditorData<>(0)));
+		shavuosAdd.setOnAction(evt -> {
+			EditorData<Integer> last = new EditorData<>(0);
+			shavuosData.add(last);
+
+			shavuosList.scrollTo(last);
+		});
 
 		VBox shavuosPane = new VBox(10);
 		HBox shavuosHeader = new HBox(15);
@@ -128,22 +156,26 @@ public class DetailsPane extends VBox {
 		// -----------------
 
 		giftsData = FXCollections.observableArrayList();
-		if (entry != null) {
-			for (boolean data : entry.getGiftsReceived())
-				giftsData.add(new EditorData<>(data));
-
-			int eligable = entry.getTotal() / 100;
-			while (giftsData.size() < eligable) {
-				giftsData.add(new EditorData<>(false));
-			}
-		}
-
 		ListView<EditorData<Boolean>> giftsList = new ListView<>();
 		giftsList.setCellFactory(view -> new GiftEditorCell());
 		giftsList.setItems(giftsData);
 		giftsList.setSelectionModel(new NoSelectionModel<EditorData<Boolean>>());
 		giftsList.setPrefHeight(200);
 		giftsList.setId("gifts-list");
+
+		if (entry != null) {
+			EditorData<Boolean> last = null;
+			for (boolean data : entry.getGiftsReceived())
+				giftsData.add(last = new EditorData<>(data));
+
+			int eligable = entry.getTotal() / 100;
+			while (giftsData.size() < eligable) {
+				giftsData.add(last = new EditorData<>(false));
+			}
+
+			if (last != null)
+				giftsList.scrollTo(last);
+		}
 
 		Label giftsLabel = new Label("Gifts");
 		giftsLabel.setPadding(new Insets(4));
@@ -177,94 +209,17 @@ public class DetailsPane extends VBox {
 
 	public static void showNewDialog() {
 		DetailsPane pane = new DetailsPane(null);
-		Util.createDialog(pane, "New Member",
+		boolean success = Util.createDialog(pane, "New Member",
 				pane.getController().phone.textProperty().isEmpty()
 						.or(pane.getController().cityYiddish.getEditor().textProperty().isEmpty()),
-				ButtonType.CANCEL, ButtonType.OK).filter(b -> b == ButtonType.OK).ifPresent(b -> {
-					Entry e = pane.getController().getEntry();
+				ButtonType.CANCEL, ButtonType.OK).filter(b -> b == ButtonType.OK).isPresent();
 
-					e.persist(row -> {
-						for (int i = 0; i < pane.pointData.size(); i++) {
-							if (pane.pointData.get(i).changed()) {
-								e.putPoint(i, pane.pointData.get(i).getValue());
-							}
-						}
-						for (int i = 0; i < pane.shavuosData.size(); i++) {
-							if (pane.shavuosData.get(i).changed()) {
-								e.putShavuosData(i, pane.shavuosData.get(i).getValue());
-							}
-						}
-						for (int i = 0; i < pane.giftsData.size(); i++) {
-							if (pane.giftsData.get(i).changed()) {
-								e.putGiftReceived(i, pane.giftsData.get(i).getValue());
-							}
-						}
-					});
-				});
-	}
+		FormController form = pane.getController();
 
-	public static void showDialog(Entry entry) {
-		DetailsPane pane = new DetailsPane(entry);
-		ButtonType type = Util.createDialog(pane, "Details",
-				pane.getController().phone.textProperty().isEmpty()
-						.or(pane.getController().cityYiddish.getEditor().textProperty().isEmpty()),
-				ButtonType.CANCEL, ButtonType.APPLY).filter(b -> b == ButtonType.APPLY).orElse(null);
+		if (success) {
+			Entry e = form.getEntry();
 
-		Entry e = pane.getController().getEntry();
-		if (type == ButtonType.APPLY) {
-			e.saveDetails();
-			for (int i = 0; i < pane.pointData.size(); i++) {
-				if (pane.pointData.get(i).changed()) {
-					e.putPoint(i, pane.pointData.get(i).getValue());
-				}
-			}
-			for (int i = 0; i < pane.shavuosData.size(); i++) {
-				if (pane.shavuosData.get(i).changed()) {
-					e.putShavuosData(i, pane.shavuosData.get(i).getValue());
-				}
-			}
-			for (int i = 0; i < pane.giftsData.size(); i++) {
-				if (pane.giftsData.get(i).changed()) {
-					e.putGiftReceived(i, pane.giftsData.get(i).getValue());
-				}
-			}
-
-		} else if (e.isDetailsChanged()) {
-			e.reload();
-		}
-	}
-
-	public static void showDialog(List<Entry> entries) {
-		if (entries.size() == 0) {
-			showNewDialog();
-			return;
-		} else if (entries.size() == 1) {
-			showDialog(entries.get(0));
-			return;
-		}
-
-		new FamilyGrouping(entries);// validates and binds values
-
-		TabPane family = new TabPane();
-		DetailsPane any = null;
-
-		for (Entry e : entries) {
-			Tab t = new Tab(e.getFirstNameYiddish());
-			t.setClosable(false);
-			t.setContent(any = new DetailsPane(e));
-
-			family.getTabs().add(t);
-		}
-
-		ButtonType type = Util.createDialog(family, "Details",
-				any.getController().phone.textProperty().isEmpty()
-						.or(any.getController().cityYiddish.getEditor().textProperty().isEmpty()),
-				ButtonType.CANCEL, ButtonType.APPLY).filter(b -> b == ButtonType.APPLY).orElse(null);
-		for (Tab t : family.getTabs()) {
-			DetailsPane pane = (DetailsPane) t.getContent();
-			Entry e = pane.getController().getEntry();
-			if (type == ButtonType.APPLY) {
-				e.saveDetails();
+			e.persist(row -> {
 				for (int i = 0; i < pane.pointData.size(); i++) {
 					if (pane.pointData.get(i).changed()) {
 						e.putPoint(i, pane.pointData.get(i).getValue());
@@ -280,10 +235,149 @@ public class DetailsPane extends VBox {
 						e.putGiftReceived(i, pane.giftsData.get(i).getValue());
 					}
 				}
+			});
 
-			} else if (e.isDetailsChanged()) {
-				e.reload();
+			Note n = NoteManager.getInstance().getNote(e.getPhone());
+			if (n != null) {
+				if (n.getNote().isEmpty()) {
+					n.delete();
+				} else if (n.isChanged()) {
+					n.save();
+				}
+			} else if (!form.notes.getText().isEmpty()) {
+				Note.withNumberAndAlarm(e.getPhone(), form.getAlarm(), form.notes.getText());
+			}
+		} else {
+			Note n = NoteManager.getInstance().getNote(form.phone.getText());
+			if (n != null && n.isChanged()) {
+				n.reload();
 			}
 		}
+	}
+
+	public static void showDialog(Entry entry) {
+		showDialog(Arrays.asList(entry));
+	}
+
+	public static void showDialog(List<Entry> entries) {
+		if (entries.size() == 0) {
+			showNewDialog();
+			return;
+		}
+
+		FamilyGrouping group = new FamilyGrouping(entries);
+		StringProperty noteString = new SimpleStringProperty("");
+		ObjectProperty<Instant> alarm = new SimpleObjectProperty<>();
+
+		JFXTabPane family = new JFXTabPane();
+		family.getStylesheets().add(DetailsPane.class.getResource("/resources/css/details-tab-pane.css").toExternalForm());
+		
+		DetailsPane detailsPane = null;
+
+		for (Entry e : entries) {
+			Tab t = new Tab();
+			t.textProperty().bind(e.firstNameYiddishProperty());
+			t.setClosable(false);
+			t.setContent(detailsPane = new DetailsPane(e));
+			noteString.bindBidirectional(detailsPane.getController().notes.textProperty());
+			alarm.bindBidirectional(detailsPane.getController().alarmProperty());
+
+			family.getTabs().add(t);
+		}
+
+		Tab newTab = new Tab("+");
+		newTab.setTooltip(new Tooltip("Add Sibling"));
+		newTab.getStyleClass().add("new-tab");
+		newTab.setClosable(false);
+		family.getTabs().add(newTab);
+
+		family.getSelectionModel().selectedItemProperty().addListener((obs, ov, nv) -> {
+			if (nv == newTab) {
+				DetailsPane p;
+
+				Tab tab = createAndSelectNewTab(family);
+				
+				Entry newEntry = group.newSibling();
+				newEntry.setDetailsChanged(false); // don't persist if no changes
+				tab.textProperty().bind(newEntry.firstNameYiddishProperty());
+				tab.setContent(p = new DetailsPane(newEntry));
+
+				p.getController().notes.textProperty().bindBidirectional(noteString);
+				p.getController().alarmProperty().bindBidirectional(alarm);
+			}
+
+		});
+
+		boolean success = Util.createDialog(family, "Details",
+				detailsPane.getController().phone.textProperty().isEmpty()
+						.or(detailsPane.getController().cityYiddish.getEditor().textProperty().isEmpty()),
+				ButtonType.CANCEL, ButtonType.OK).filter(b -> b == ButtonType.OK).isPresent();
+
+		group.setDisableConflictMerge(true);
+
+		for (Tab t : family.getTabs()) {
+			if (t == newTab)
+				continue;
+
+			DetailsPane pane = (DetailsPane) t.getContent();
+			Entry e = pane.getController().getEntry();
+			if (success) {
+				if (e.isDetailsChanged()) {
+					if (e.getRow() < 0) {
+						e.persist();
+					} else {
+						e.saveDetails();
+					}
+				}
+
+				for (int i = 0; i < pane.pointData.size(); i++) {
+					if (pane.pointData.get(i).changed()) {
+						e.putPoint(i, pane.pointData.get(i).getValue());
+					}
+				}
+				for (int i = 0; i < pane.shavuosData.size(); i++) {
+					if (pane.shavuosData.get(i).changed()) {
+						e.putShavuosData(i, pane.shavuosData.get(i).getValue());
+					}
+				}
+				for (int i = 0; i < pane.giftsData.size(); i++) {
+					if (pane.giftsData.get(i).changed()) {
+						e.putGiftReceived(i, pane.giftsData.get(i).getValue());
+					}
+				}
+			} else {
+				if (e.getTab() > 0 && e.getRow() > 0 && e.isDetailsChanged()) {
+					e.reload();
+				}
+			}
+		}
+
+		Entry e = entries.get(0);
+		Note n = NoteManager.getInstance().getNote(e.getPhone());
+
+		if (success) {
+			if (n != null) {
+				if (n.getNote().isEmpty()) {
+					n.delete();
+				} else if (n.isChanged()) {
+					n.save();
+				}
+			} else if (!noteString.get().isEmpty()) {
+				Note.withNumberAndAlarm(e.getPhone(), alarm.get(), noteString.get());
+			}
+		} else {
+			if (n != null && n.isChanged()) {
+				n.reload();
+			}
+
+		}
+	}
+
+	private static Tab createAndSelectNewTab(TabPane tabPane) {
+		Tab tab = new Tab();
+		final ObservableList<Tab> tabs = tabPane.getTabs();
+		tabs.add(tabs.size() - 1, tab);
+		tabPane.getSelectionModel().select(tab);
+		return tab;
 	}
 }

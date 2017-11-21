@@ -54,7 +54,7 @@ public class TableViewUtils {
 
 	}
 
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMMM d, ''yy")
+	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMMM. d, ''yy")
 			.withZone(ZoneId.systemDefault());
 
 	@SuppressWarnings("deprecation")
@@ -122,6 +122,9 @@ public class TableViewUtils {
 			return cell;
 		});
 
+		TableColumn<Entry, String> account = new TableColumn<>("Account");
+		account.setCellValueFactory(new PropertyValueFactory<>("account"));
+		
 		TableColumn<Entry, String> id = new TableColumn<>("ID");
 		id.setCellValueFactory(new PropertyValueFactory<>("id"));
 
@@ -169,6 +172,9 @@ public class TableViewUtils {
 
 		TableColumn<Entry, String> phone = new TableColumn<>("\u05d8\u05e2\u05dc");
 		phone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+		
+		TableColumn<Entry, String> cellPhone = new TableColumn<>("\u05e1\u05e2\u05dc");
+		cellPhone.setCellValueFactory(new PropertyValueFactory<>("cellPhone"));
 
 		TableColumn<Entry, String> fatherName = new TableColumn<>("\u05d8\u05d0\u05d8\u05e2'\u05e1");
 		fatherName.setCellValueFactory(new PropertyValueFactory<>("fatherName"));
@@ -183,8 +189,8 @@ public class TableViewUtils {
 		total.setCellValueFactory(new PropertyValueFactory<>("total"));
 
 		table.getColumns()
-				.addAll(Arrays.asList(number, select, id, memberSince, gender, firstName, lastName, addressNumber,
-						addressName, apt, city, state, zip, cityYiddish, age, school, phone, fatherName,
+				.addAll(Arrays.asList(number, select, account, id, memberSince, gender, firstName, lastName, addressNumber,
+						addressName, apt, city, state, zip, cityYiddish, age, school, phone, cellPhone, fatherName,
 						lastNameYiddish, firstNameYiddish, total));
 
 		table.getColumns().forEach(col -> col.impl_setReorderable(false));
@@ -221,6 +227,9 @@ public class TableViewUtils {
 		select.setMinWidth(30);
 		select.setMaxWidth(30);
 
+		account.setMinWidth(60);
+		account.setMaxWidth(60);
+		
 		id.setMinWidth(50);
 		id.setMaxWidth(50);
 
@@ -313,8 +322,8 @@ public class TableViewUtils {
 			return cell;
 		});
 
-		TableColumn<FamilyGrouping, String> id = new TableColumn<>("ID");
-		id.setCellValueFactory(new PropertyValueFactory<>("id"));
+		TableColumn<FamilyGrouping, String> account = new TableColumn<>("Account");
+		account.setCellValueFactory(new PropertyValueFactory<>("account"));
 
 		TableColumn<FamilyGrouping, String> lastName = new TableColumn<>("Last");
 		lastName.setCellValueFactory(new PropertyValueFactory<>("lastName"));
@@ -342,6 +351,9 @@ public class TableViewUtils {
 
 		TableColumn<FamilyGrouping, String> phone = new TableColumn<>("\u05d8\u05e2\u05dc");
 		phone.setCellValueFactory(new PropertyValueFactory<>("phone"));
+		
+		TableColumn<FamilyGrouping, String> cellPhone = new TableColumn<>("\u05e1\u05e2\u05dc");
+		cellPhone.setCellValueFactory(new PropertyValueFactory<>("cellPhone"));
 
 		TableColumn<FamilyGrouping, String> fatherName = new TableColumn<>("\u05d8\u05d0\u05d8\u05e2'\u05e1");
 		fatherName.setCellValueFactory(new PropertyValueFactory<>("fatherName"));
@@ -349,8 +361,8 @@ public class TableViewUtils {
 		TableColumn<FamilyGrouping, String> lastNameYiddish = new TableColumn<>("\u05dc\u05e2\u05e6\u05d8\u05e2");
 		lastNameYiddish.setCellValueFactory(new PropertyValueFactory<>("lastNameYiddish"));
 
-		table.getColumns().addAll(Arrays.asList(number, select, lastName, addressNumber, addressName, apt, city, state,
-				zip, cityYiddish, phone, fatherName, lastNameYiddish));
+		table.getColumns().addAll(Arrays.asList(number, select, account, lastName, addressNumber, addressName, apt, city, state,
+				zip, cityYiddish, phone, cellPhone, fatherName, lastNameYiddish));
 
 		table.getColumns().forEach(col -> col.impl_setReorderable(false));
 		table.getColumns().forEach(col -> col.setSortable(false));
@@ -363,8 +375,8 @@ public class TableViewUtils {
 		select.setMinWidth(30);
 		select.setMaxWidth(30);
 
-		id.setMinWidth(50);
-		id.setMaxWidth(50);
+		account.setMinWidth(60);
+		account.setMaxWidth(60);
 
 		addressNumber.setMinWidth(45);
 		addressNumber.setMaxWidth(45);

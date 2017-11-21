@@ -57,6 +57,7 @@ import javafx.scene.control.TableView;
 import javafx.scene.control.cell.CheckBoxTableCell;
 import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
@@ -109,11 +110,19 @@ public class GiftResultsView extends VBox {
 
 	void showStage(Node n, String title) {
 		Stage stage = new Stage();
+		Model.getInstance().registerStage(stage);
 		stage.setTitle(title);
 		stage.setMaximized(true);
 		stage.getIcons().add(Main.ICON);
 
-		stage.setScene(new Scene(new StackPane(n)));
+		Scene scene = new Scene(new StackPane(n));
+		stage.setScene(scene);
+
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, evt -> {
+			if (evt.getCode() == KeyCode.ESCAPE)
+				stage.close();
+		});
+		
 		stage.showAndWait();
 	}
 	
@@ -136,13 +145,13 @@ public class GiftResultsView extends VBox {
 
 		});
 
-		MenuItem received = new MenuItem("Mark as Received");
+		MenuItem received = new MenuItem("Mark as Processed");
 		received.setOnAction(evt -> {
 			items.stream().filter(e -> e.isSelected()).forEach(e -> e.putGiftReceived(gift, true));
 		});
 		received.disableProperty().bind(export.disableProperty());
 
-		MenuItem notReceived = new MenuItem("Mark as Not Received");
+		MenuItem notReceived = new MenuItem("Mark as Not Processed");
 		notReceived.setOnAction(evt -> {
 			items.stream().filter(e -> e.isSelected()).forEach(e -> e.putGiftReceived(gift, false));
 		});

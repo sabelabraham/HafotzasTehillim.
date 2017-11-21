@@ -1,7 +1,11 @@
-package org.hafotzastehillim.fx;
+package org.hafotzastehillim.fx.util;
 
 import java.time.LocalDate;
+
+import javafx.beans.property.SimpleStringProperty;
+import javafx.css.PseudoClass;
 import javafx.geometry.Pos;
+import javafx.scene.control.ContentDisplay;
 import javafx.scene.control.DateCell;
 import javafx.scene.control.DatePicker;
 import javafx.scene.layout.VBox;
@@ -14,6 +18,9 @@ import net.sourceforge.zmanim.hebrewcalendar.HebrewDateFormatter;
 import net.sourceforge.zmanim.hebrewcalendar.JewishDate;
 
 public class HebrewDateCell extends DateCell {
+
+	private static final PseudoClass today = PseudoClass.getPseudoClass("today");
+	private static final PseudoClass selected = PseudoClass.getPseudoClass("selected");
 
 	private static final HebrewDateFormatter HEBREW_DAY_FORMATTER = new HebrewDateFormatter();
 	static {
@@ -36,20 +43,21 @@ public class HebrewDateCell extends DateCell {
 		String[] hebFmt = HEBREW_DAY_FORMATTER.format(jewish).split("\\s");
 
 		Text text = new Text(getText());
+		text.getStyleClass().add("text");
 		text.setFontSmoothingType(FontSmoothingType.GRAY);
 		Text hebText = new Text(hebFmt[0] + " " + hebFmt[1]);
-
-		text.setFont(Font.font("System", FontWeight.BOLD, 12));
-		hebText.setFont(Font.font(9));
-
-		if (item.equals(picker.getValue())) {
-			text.setFill(Color.WHITE);
-			hebText.setFill(Color.WHITE);
-		}
+		hebText.getStyleClass().add("hebrew-text");
+		
+		pseudoClassStateChanged(selected, item.isEqual(picker.getValue()));
+		pseudoClassStateChanged(today, item.isEqual(LocalDate.now()));
 
 		VBox box = new VBox(text, hebText);
 		box.setAlignment(Pos.CENTER);
 		setGraphic(box);
-		setText("");
+
+		setContentDisplay(ContentDisplay.GRAPHIC_ONLY);
+
+		getStyleClass().add("hebrew-date-cell");
+		getStylesheets().add(getClass().getResource("/resources/css/hebrew-date-cell.css").toExternalForm());
 	}
 }

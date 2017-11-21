@@ -11,10 +11,11 @@ public enum Tab {
 	NEW_SQUARE("\u05e1\u05e7\u05d5\u05d5\u05d9\u05e8\u05d0", "New Square"), //
 	MONROE("\u05e7\u05e8\u05d9\u05ea \u05d9\u05d5\u05d0\u05dc", "Monroe"), //
 	MONSEY("\u05de\u05d0\u05e0\u05e1\u05d9", "Monsey"), //
-	OTHER_CITIES("others", "Others"), //
-	SHAVUOS("\u05e9\u05d1\u05d5\u05e2\u05d5\u05ea", "Shavuos"),//
-	GIFTS("\u05de\u05ea\u05e0\u05d5\u05ea", "Gifts");
-
+	OTHER_CITIES("Others"), //
+	SHAVUOS("\u05e9\u05d1\u05d5\u05e2\u05d5\u05ea", "Shavuos"), //
+	GIFTS("\u05de\u05ea\u05e0\u05d5\u05ea", "Gifts"), //
+	NOTES("Notes");
+	
 	private String name;
 	private String prettyName;
 
@@ -24,7 +25,7 @@ public enum Tab {
 	}
 
 	Tab(String name, String prettyName) {
-		this.name= name;
+		this.name = name;
 		this.prettyName = prettyName;
 	}
 
@@ -85,7 +86,7 @@ public enum Tab {
 
 		return false;
 	}
-	
+
 	public static boolean isCity(Tab t) {
 		return cities.contains(t);
 	}

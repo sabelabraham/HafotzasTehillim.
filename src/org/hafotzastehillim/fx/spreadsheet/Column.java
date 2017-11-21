@@ -6,6 +6,7 @@ import java.util.List;
 
 public enum Column {
 
+	ACCOUNT_NUMBER, //
 	ID_NUMBER, //
 	CREATED, //
 	MODIFIED, //
@@ -21,6 +22,7 @@ public enum Column {
 	CITY_YIDDISH, //
 	CLASS, //
 	SCHOOL, //
+	CELL_PHONE, //
 	PHONE, //
 	FATHER_NAME, //
 	LAST_NAME_YIDDISH, //
@@ -57,9 +59,9 @@ public enum Column {
 		return sb.reverse().toString();
 	}
 
-	private static final List<Column> details = Collections.unmodifiableList(
-			Arrays.asList(ID_NUMBER, GENDER, FIRST_NAME, LAST_NAME, ADDRESS_NUMBER, ADDRESS_NAME, APT, CITY, STATE, ZIP,
-					CITY_YIDDISH, CLASS, SCHOOL, PHONE, FATHER_NAME, LAST_NAME_YIDDISH, FIRST_NAME_YIDDISH));
+	private static final List<Column> details = Collections.unmodifiableList(Arrays.asList(ACCOUNT_NUMBER, ID_NUMBER,
+			GENDER, FIRST_NAME, LAST_NAME, ADDRESS_NUMBER, ADDRESS_NAME, APT, CITY, STATE, ZIP, CITY_YIDDISH, CLASS,
+			SCHOOL, PHONE, FATHER_NAME, LAST_NAME_YIDDISH, FIRST_NAME_YIDDISH));
 
 	public static List<Column> details() {
 		return details;

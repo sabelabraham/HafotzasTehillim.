@@ -18,7 +18,7 @@
 <?import javafx.scene.layout.StackPane?>
 <?import javafx.scene.layout.VBox?>
 
-<VBox xmlns="http://javafx.com/javafx/8.0.111" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hafotzastehillim.fx.ReportQueryController">
+<VBox xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1" fx:controller="org.hafotzastehillim.fx.ReportQueryController">
 	<children>
 		<GridPane fx:id="grid" hgap="20.0" maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" vgap="10.0">
 			<columnConstraints>
@@ -180,7 +180,7 @@
 				</HBox>
             <JFXCheckBox fx:id="campaignAllMatch" focusTraversable="false" text="All Match" GridPane.columnIndex="3" GridPane.rowIndex="2">
                <GridPane.margin>
-                  <Insets left="4.0" />
+                  <Insets left="13.5" />
                </GridPane.margin>
             </JFXCheckBox>
             <StackPane alignment="CENTER_RIGHT" GridPane.rowIndex="3">
@@ -217,7 +217,10 @@
                   <DatePicker fx:id="memberSinceSelectField" editable="false" />
                </children>
             </HBox>
-            <JFXCheckBox fx:id="familyGrouping" text="Family Grouping" GridPane.columnIndex="1" GridPane.rowIndex="6" />
+            <JFXCheckBox fx:id="familyGrouping" text="Families" GridPane.columnIndex="1" GridPane.rowIndex="6">
+               <GridPane.margin>
+                  <Insets left="13.5" />
+               </GridPane.margin></JFXCheckBox>
 			</children>
 			<padding>
 				<Insets bottom="35.0" left="35.0" right="35.0" top="35.0" />

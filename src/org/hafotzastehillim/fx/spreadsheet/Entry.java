@@ -1,6 +1,7 @@
 package org.hafotzastehillim.fx.spreadsheet;
 
 import java.time.Instant;
+import java.time.format.DateTimeParseException;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -53,6 +54,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	private StringProperty created;
 	private StringProperty modified;
 
+	private StringProperty account;
 	private StringProperty id;
 	private StringProperty gender;
 	private StringProperty firstName;
@@ -64,6 +66,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	private StringProperty state;
 	private StringProperty zip;
 	private StringProperty phone;
+	private StringProperty cellPhone;
 	private StringProperty firstNameYiddish;
 	private StringProperty lastNameYiddish;
 	private StringProperty fatherName;
@@ -77,7 +80,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	private ObservableList<Boolean> giftsReceived;
 
 	private ReadOnlyIntegerWrapper total;
-	private ReadOnlyBooleanWrapper detailsChanged;
+	private BooleanProperty detailsChanged;
 
 	private EventStream<Change<String>> detailsChangeStream;
 	private EventStream<Object> changeStream;
@@ -95,17 +98,15 @@ public class Entry implements Selectable, Comparable<Entry> {
 			total.set(points.stream().mapToInt(i -> i == null ? 0 : i.intValue()).sum());
 		});
 
-		detailsChanged = new ReadOnlyBooleanWrapper(this, "detailsChanged", false);
-
 		created();
 
-		detailsChangeStream = merge(changesOf(idProperty()), changesOf(genderProperty()),
+		detailsChangeStream = merge(changesOf(accountProperty()), changesOf(idProperty()), changesOf(genderProperty()),
 				changesOf(firstNameProperty()), changesOf(lastNameProperty()), changesOf(addressNumberProperty()),
 				changesOf(addressNameProperty()), changesOf(aptProperty()), changesOf(cityProperty()),
 				changesOf(stateProperty()), changesOf(zipProperty()), changesOf(phoneProperty()),
-				changesOf(firstNameYiddishProperty()), changesOf(lastNameYiddishProperty()),
-				changesOf(fatherNameProperty()), changesOf(schoolProperty()), changesOf(ageProperty()),
-				changesOf(cityYiddishProperty()));
+				changesOf(cellPhoneProperty()), changesOf(firstNameYiddishProperty()),
+				changesOf(lastNameYiddishProperty()), changesOf(fatherNameProperty()), changesOf(schoolProperty()),
+				changesOf(ageProperty()), changesOf(cityYiddishProperty()));
 
 		changeStream = merge(detailsChangeStream, changesOf(getPoints()), changesOf(getShavuosData()),
 				changesOf(getGiftsReceived()));
@@ -134,7 +135,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 		loadShavuosData();
 		loadGiftsData();
 
-		modificationSubscription.unsubscribe();
+		modificationSubscription = changeStream.subscribe(obj -> modified());
 	}
 
 	public final String getCreated() {
@@ -142,7 +143,14 @@ public class Entry implements Selectable, Comparable<Entry> {
 	}
 
 	public Instant getCreatedInstant() {
-		return Instant.parse(getCreated());
+		try {
+			return Instant.parse(getCreated());
+		} catch (DateTimeParseException e) {
+			Instant now = Instant.now();
+			setCreated(now);
+			return now;
+
+		}
 	}
 
 	public final String getModified() {
@@ -150,7 +158,14 @@ public class Entry implements Selectable, Comparable<Entry> {
 	}
 
 	public Instant getModifiedInstant() {
-		return Instant.parse(getModified());
+		try {
+			return Instant.parse(getModified());
+		} catch (DateTimeParseException e) {
+			Instant now = Instant.now();
+			setModified(now);
+			return now;
+
+		}
 	}
 
 	public final void setCreated(String str) {
@@ -188,7 +203,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty createdProperty() {
 		if (created == null) {
 			created = new SimpleStringProperty(this, "created", "");
-			created.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			created.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return created;
@@ -197,10 +212,14 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty modifiedProperty() {
 		if (modified == null) {
 			modified = new SimpleStringProperty(this, "modified", "");
-			modified.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			modified.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return modified;
+	}
+
+	public final String getAccount() {
+		return accountProperty().get();
 	}
 
 	public final String getId() {
@@ -247,6 +266,10 @@ public class Entry implements Selectable, Comparable<Entry> {
 		return phoneProperty().get();
 	}
 
+	public final String getCellPhone() {
+		return cellPhoneProperty().get();
+	}
+
 	public final String getFirstNameYiddish() {
 		return firstNameYiddishProperty().get();
 	}
@@ -275,8 +298,8 @@ public class Entry implements Selectable, Comparable<Entry> {
 		return detailsChangedProperty().get();
 	}
 
-	public final boolean isSelected() {
-		return selectedProperty().get();
+	public final void setAccount(String str) {
+		accountProperty().set(str);
 	}
 
 	public final void setId(String str) {
@@ -323,6 +346,10 @@ public class Entry implements Selectable, Comparable<Entry> {
 		phoneProperty().set(str);
 	}
 
+	public final void setCellPhone(String str) {
+		cellPhoneProperty().set(str);
+	}
+
 	public final void setFirstNameYiddish(String str) {
 		firstNameYiddishProperty().set(str);
 	}
@@ -347,14 +374,23 @@ public class Entry implements Selectable, Comparable<Entry> {
 		cityYiddishProperty().set(str);
 	}
 
-	public final void setSelected(Boolean bool) {
-		selectedProperty().set(bool);
+	public final void setDetailsChanged(boolean bool) {
+		detailsChangedProperty().set(bool);
+	}
+
+	public StringProperty accountProperty() {
+		if (account == null) {
+			account = new SimpleStringProperty(this, "account", "");
+			account.addListener((obs, ov, nv) -> setDetailsChanged(true));
+		}
+
+		return account;
 	}
 
 	public StringProperty idProperty() {
 		if (id == null) {
 			id = new SimpleStringProperty(this, "id", "");
-			id.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			id.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return id;
@@ -363,7 +399,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty genderProperty() {
 		if (gender == null) {
 			gender = new SimpleStringProperty(this, "gender", "");
-			gender.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			gender.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return gender;
@@ -372,7 +408,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty firstNameProperty() {
 		if (firstName == null) {
 			firstName = new SimpleStringProperty(this, "firstName", "");
-			firstName.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			firstName.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return firstName;
@@ -381,7 +417,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty lastNameProperty() {
 		if (lastName == null) {
 			lastName = new SimpleStringProperty(this, "lastName", "");
-			lastName.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			lastName.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return lastName;
@@ -390,7 +426,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty addressNumberProperty() {
 		if (addressNumber == null) {
 			addressNumber = new SimpleStringProperty(this, "addressNumber", "");
-			addressNumber.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			addressNumber.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return addressNumber;
@@ -399,7 +435,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty addressNameProperty() {
 		if (addressName == null) {
 			addressName = new SimpleStringProperty(this, "addressName", "");
-			addressName.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			addressName.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return addressName;
@@ -408,7 +444,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty aptProperty() {
 		if (apt == null) {
 			apt = new SimpleStringProperty(this, "apt", "");
-			apt.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			apt.addListener((obs, ov, nv) -> setDetailsChanged(true));
 			apt.addListener((obs, ov, nv) -> {
 				if (!nv.isEmpty() && !nv.contains("#"))
 					apt.set("#" + nv);
@@ -421,7 +457,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty cityProperty() {
 		if (city == null) {
 			city = new SimpleStringProperty(this, "city", "");
-			city.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			city.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return city;
@@ -430,7 +466,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty stateProperty() {
 		if (state == null) {
 			state = new SimpleStringProperty(this, "state", "");
-			state.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			state.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return state;
@@ -439,7 +475,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty zipProperty() {
 		if (zip == null) {
 			zip = new SimpleStringProperty(this, "zip", "");
-			zip.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			zip.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return zip;
@@ -448,16 +484,35 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty phoneProperty() {
 		if (phone == null) {
 			phone = new SimpleStringProperty(this, "phone", "");
-			phone.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			phone.addListener((obs, ov, nv) -> {
+				if (nv.startsWith("1"))
+					setPhone(nv.substring(1));
+
+				setDetailsChanged(true);
+			});
 		}
 
 		return phone;
 	}
 
+	public StringProperty cellPhoneProperty() {
+		if (cellPhone == null) {
+			cellPhone = new SimpleStringProperty(this, "cellPhone", "");
+			cellPhone.addListener((obs, ov, nv) -> {
+				if (nv.startsWith("1"))
+					setCellPhone(nv.substring(1));
+
+				setDetailsChanged(true);
+			});
+		}
+
+		return cellPhone;
+	}
+
 	public StringProperty firstNameYiddishProperty() {
 		if (firstNameYiddish == null) {
 			firstNameYiddish = new SimpleStringProperty(this, "firstNameYiddish", "");
-			firstNameYiddish.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			firstNameYiddish.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return firstNameYiddish;
@@ -466,7 +521,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty lastNameYiddishProperty() {
 		if (lastNameYiddish == null) {
 			lastNameYiddish = new SimpleStringProperty(this, "lastNameYiddish", "");
-			lastNameYiddish.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			lastNameYiddish.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return lastNameYiddish;
@@ -475,7 +530,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty fatherNameProperty() {
 		if (fatherName == null) {
 			fatherName = new SimpleStringProperty(this, "fatherName", "");
-			fatherName.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			fatherName.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return fatherName;
@@ -484,7 +539,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty schoolProperty() {
 		if (school == null) {
 			school = new SimpleStringProperty(this, "school", "");
-			school.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			school.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return school;
@@ -493,7 +548,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty ageProperty() {
 		if (age == null) {
 			age = new SimpleStringProperty(this, "age", "");
-			age.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			age.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return age;
@@ -502,14 +557,17 @@ public class Entry implements Selectable, Comparable<Entry> {
 	public StringProperty cityYiddishProperty() {
 		if (cityYiddish == null) {
 			cityYiddish = new SimpleStringProperty(this, "cityYiddish", "");
-			cityYiddish.addListener((obs, ov, nv) -> detailsChanged.set(true));
+			cityYiddish.addListener((obs, ov, nv) -> setDetailsChanged(true));
 		}
 
 		return cityYiddish;
 	}
 
-	public ReadOnlyBooleanProperty detailsChangedProperty() {
-		return detailsChanged.getReadOnlyProperty();
+	public BooleanProperty detailsChangedProperty() {
+		if (detailsChanged == null) {
+			detailsChanged = new SimpleBooleanProperty(this, "detailsChanged", false);
+		}
+		return detailsChanged;
 	}
 
 	public BooleanProperty selectedProperty() {
@@ -519,8 +577,6 @@ public class Entry implements Selectable, Comparable<Entry> {
 
 		return selected;
 	}
-
-	private static final PhoneNumberUtil util = PhoneNumberUtil.getInstance();
 
 	private void loadShavuosData() {
 		if (shavuosRow >= 0) {
@@ -538,6 +594,8 @@ public class Entry implements Selectable, Comparable<Entry> {
 		}
 	}
 
+	private static final PhoneNumberUtil util = PhoneNumberUtil.getInstance();
+
 	private void loadDetails() {
 		if (tab == -1) {
 			throw new IllegalStateException("Tab value not set.");
@@ -551,6 +609,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 		// format phone number
 		if (data.size() > Column.PHONE.ordinal()) {
 			String phone = data.get(Column.PHONE.ordinal());
+			String cellPhone = data.get(Column.CELL_PHONE.ordinal());
 			try {
 				PhoneNumber pn = util.parse(phone, "US");
 				phone = util.format(pn, PhoneNumberFormat.NATIONAL);
@@ -568,6 +627,24 @@ public class Entry implements Selectable, Comparable<Entry> {
 							ButtonType.OK);
 				}
 
+				if (!cellPhone.isEmpty()) {
+					PhoneNumber cpn = util.parse(cellPhone, "US");
+					cellPhone = util.format(cpn, PhoneNumberFormat.NATIONAL);
+
+					data.set(Column.CELL_PHONE.ordinal(), cellPhone);
+					if (!Model.getInstance().isIgnoreInvalidPhone() && !util.isValidNumber(cpn)) {
+						AsYouTypeFormatter fmt = util.getAsYouTypeFormatter("US");
+						String input = "";
+						for (char c : cellPhone.toCharArray())
+							input = fmt.inputDigit(c);
+
+						String p = input;
+						Util.createAlert(AlertType.WARNING, "Invalid Phone", "Invalid Cell Phone Number", "Entry \""
+								+ data.get(Column.ID_NUMBER.ordinal()) + "\" has an invalid cell phone number\n" + p,
+								ButtonType.OK);
+					}
+				}
+
 			} catch (NumberParseException e) {
 				if (!Model.getInstance().isIgnoreInvalidPhone()) {
 					Util.createAlert(AlertType.WARNING, "Missing Phone", "Missing Phone Number",
@@ -578,7 +655,7 @@ public class Entry implements Selectable, Comparable<Entry> {
 		}
 
 		setData(data);
-		detailsChanged.set(false);
+		setDetailsChanged(false);
 	}
 
 	public void reload() {
@@ -608,6 +685,10 @@ public class Entry implements Selectable, Comparable<Entry> {
 		if (data.size() > Column.PHONE.ordinal()) {
 			String phone = data.get(Column.PHONE.ordinal()).replaceAll("[^\\d]", "");
 			data.set(Column.PHONE.ordinal(), phone);
+		}
+		if (data.size() > Column.CELL_PHONE.ordinal()) {
+			String cellPhone = data.get(Column.CELL_PHONE.ordinal()).replaceAll("[^\\d]", "");
+			data.set(Column.CELL_PHONE.ordinal(), cellPhone);
 		}
 
 		sheet.updateRow(tab, row, data);
@@ -863,6 +944,8 @@ public class Entry implements Selectable, Comparable<Entry> {
 
 	public String get(Column column) {
 		switch (column) {
+		case ACCOUNT_NUMBER:
+			return getAccount();
 		case ID_NUMBER:
 			return getId();
 		case CREATED:
@@ -895,6 +978,8 @@ public class Entry implements Selectable, Comparable<Entry> {
 			return getSchool();
 		case PHONE:
 			return getPhone();
+		case CELL_PHONE:
+			return getCellPhone();
 		case FATHER_NAME:
 			return getFatherName();
 		case LAST_NAME_YIDDISH:
@@ -909,6 +994,9 @@ public class Entry implements Selectable, Comparable<Entry> {
 
 	public void set(Column column, String data) {
 		switch (column) {
+		case ACCOUNT_NUMBER:
+			setAccount(data);
+			break;
 		case ID_NUMBER:
 			setId(data);
 			break;
@@ -956,6 +1044,9 @@ public class Entry implements Selectable, Comparable<Entry> {
 			break;
 		case PHONE:
 			setPhone(data);
+			break;
+		case CELL_PHONE:
+			setCellPhone(data);
 			break;
 		case FATHER_NAME:
 			setFatherName(data);

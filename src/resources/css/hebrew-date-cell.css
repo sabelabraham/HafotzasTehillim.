@@ -1,0 +1,29 @@
+.hebrew-date-cell {
+	-fx-pref-width: 55.0;
+	-fx-pref-height: 55.0;
+}
+
+.hebrew-date-cell:today {
+	-fx-border-color: darkcyan;
+}
+
+.hebrew-date-cell:today:selected {
+	-fx-border-color: null;
+}
+
+.hebrew-date-cell .text {
+	-fx-font-size: 13.0;
+	-fx-font-weight: bold;
+}
+
+.hebrew-date-cell .hebrew-text {
+	-fx-font-size: 11.0;
+}
+
+.hebrew-date-cell:today .text, .hebrew-date-cell:today .hebrew-text {
+	-fx-fill: darkcyan;
+}
+
+.hebrew-date-cell:selected .text, .hebrew-date-cell:selected .hebrew-text {
+	-fx-fill: white;
+}

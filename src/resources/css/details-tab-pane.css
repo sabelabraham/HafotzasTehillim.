@@ -1,0 +1,7 @@
+.tab-header-background {
+	-fx-background-color: darkcyan;
+}
+
+.new-tab .tab-selected-line {
+	-fx-background-color: darkcyan;
+}

@@ -11,22 +11,33 @@ import javafx.beans.property.ObjectProperty;
 import javafx.beans.property.SimpleBooleanProperty;
 import javafx.beans.property.SimpleIntegerProperty;
 import javafx.beans.property.SimpleObjectProperty;
+import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.property.StringProperty;
+import javafx.collections.FXCollections;
+import javafx.collections.ObservableList;
 import javafx.stage.Stage;
+import javafx.stage.WindowEvent;
 
 public class Model {
 
 	private final ObjectProperty<Spreadsheet> spreadsheet;
 	private final ObjectProperty<Entry> currentEntry;
-	private final ObjectProperty<Stage> primaryStage;
+	private final ObjectProperty<Stage> currentStage;
 
+	private final ObservableList<Stage> openStages;
 	// Settings
 	private final IntegerProperty campaignIndex;
 
 	private final BooleanProperty staySignedIn;
-	
+
 	private final BooleanProperty ignoreInvalidPhone;
 	private final BooleanProperty ignoreDuplicates;
 	private final BooleanProperty ignoreFamilyConflicts;
+
+	private final BooleanProperty silenceAlarms;
+
+	private final StringProperty printBy;
+	private final BooleanProperty showPrintDialog;
 
 	private static final Preferences pref = Preferences.userNodeForPackage(Model.class);
 
@@ -36,10 +47,16 @@ public class Model {
 	private static final String IGNORE_DUPLICATES_KEY = "IgnoreDuplicates";
 	private static final String IGNORE_FAMILY_CONFLICTS_KEY = "IgnoreFamilyConflicts";
 
+	private static final String SILENCE_ALARMS_KEY = "SilenceAlarms";
+
+	private static final String PRINT_BY_KEY = "PrintBy";
+	private static final String PRINT_SHOW_DIALOG_KEY = "ShowPrintDialog";
+
 	private Model() {
 		spreadsheet = new SimpleObjectProperty<>(this, "spreadsheet");
 		currentEntry = new SimpleObjectProperty<>(this, "currentEntry");
-		primaryStage = new SimpleObjectProperty<>(this, "primaryStage");
+		currentStage = new SimpleObjectProperty<>(this, "currentStage");
+		openStages = FXCollections.observableArrayList();
 
 		campaignIndex = new SimpleIntegerProperty(this, "campaignIndex", pref.getInt(CAMPAIGN_INDEX_KEY, 1));
 		campaignIndex.addListener((obs, ov, nv) -> pref.putInt(CAMPAIGN_INDEX_KEY, nv.intValue()));
@@ -47,11 +64,10 @@ public class Model {
 		staySignedIn = new SimpleBooleanProperty(this, "staySignedIn", pref.getBoolean(STAY_SIGNED_IN_KEY, true));
 		staySignedIn.addListener((obs, ov, nv) -> pref.putBoolean(STAY_SIGNED_IN_KEY, nv));
 
-
 		ignoreInvalidPhone = new SimpleBooleanProperty(this, "ignoreInvalidPhone",
 				pref.getBoolean(IGNORE_INVALID_PHONE_KEY, false));
 		ignoreInvalidPhone.addListener((obs, ov, nv) -> pref.putBoolean(IGNORE_INVALID_PHONE_KEY, nv));
-		
+
 		ignoreDuplicates = new SimpleBooleanProperty(this, "ignoreDuplicates",
 				pref.getBoolean(IGNORE_DUPLICATES_KEY, false));
 		ignoreDuplicates.addListener((obs, ov, nv) -> pref.putBoolean(IGNORE_DUPLICATES_KEY, nv));
@@ -59,6 +75,16 @@ public class Model {
 		ignoreFamilyConflicts = new SimpleBooleanProperty(this, "ignoreFamilyConflicts",
 				pref.getBoolean(IGNORE_FAMILY_CONFLICTS_KEY, false));
 		ignoreFamilyConflicts.addListener((obs, ov, nv) -> pref.putBoolean(IGNORE_FAMILY_CONFLICTS_KEY, nv));
+
+		silenceAlarms = new SimpleBooleanProperty(this, "silenceAlarms", pref.getBoolean(SILENCE_ALARMS_KEY, false));
+		silenceAlarms.addListener((obs, ov, nv) -> pref.putBoolean(SILENCE_ALARMS_KEY, nv));
+
+		printBy = new SimpleStringProperty(this, "printBy", pref.get(PRINT_BY_KEY, ""));
+		printBy.addListener((obs, ov, nv) -> pref.put(PRINT_BY_KEY, nv));
+
+		showPrintDialog = new SimpleBooleanProperty(this, "showPrintDialog",
+				pref.getBoolean(PRINT_SHOW_DIALOG_KEY, false));
+		showPrintDialog.addListener((obs, ov, nv) -> pref.putBoolean(PRINT_SHOW_DIALOG_KEY, nv));
 	}
 
 	public ObjectProperty<Spreadsheet> spreadsheetProperty() {
@@ -85,16 +111,32 @@ public class Model {
 		return currentEntry;
 	}
 
-	public final Stage getPrimaryStage() {
-		return primaryStageProperty().get();
+	public final Stage getCurrentStage() {
+		return currentStageProperty().get();
 	}
 
-	public final void setPrimaryStage(Stage s) {
-		primaryStageProperty().set(s);
+	public final void setCurrentStage(Stage s) {
+		currentStageProperty().set(s);
 	}
 
-	public ObjectProperty<Stage> primaryStageProperty() {
-		return primaryStage;
+	public ObjectProperty<Stage> currentStageProperty() {
+		return currentStage;
+	}
+
+	public ObservableList<Stage> getOpenStages() {
+		return openStages;
+	}
+
+	public void registerStage(Stage stage) {
+		stage.addEventHandler(WindowEvent.WINDOW_SHOWN, e -> openStages.add(stage));
+		stage.addEventHandler(WindowEvent.WINDOW_HIDDEN, e -> openStages.remove(stage));
+		stage.focusedProperty().addListener((obs, wasFocused, isNowFocused) -> {
+			if (isNowFocused) {
+				currentStage.set(stage);
+			} else {
+				currentStage.set(null);
+			}
+		});
 	}
 
 	private static final Model INSTANCE = new Model();
@@ -154,16 +196,48 @@ public class Model {
 	public final BooleanProperty ignoreInvalidPhoneProperty() {
 		return ignoreInvalidPhone;
 	}
-	
 
 	public final boolean isIgnoreInvalidPhone() {
 		return ignoreInvalidPhoneProperty().get();
 	}
-	
 
 	public final void setIgnoreInvalidPhone(final boolean ignoreInvalidPhone) {
 		ignoreInvalidPhoneProperty().set(ignoreInvalidPhone);
 	}
-	
 
+	public BooleanProperty silenceAlarmsProperty() {
+		return silenceAlarms;
+	}
+
+	public final boolean isSilenceAlarms() {
+		return silenceAlarmsProperty().get();
+	}
+
+	public final void setSilenceAlarms(final boolean silenceAlarms) {
+		silenceAlarmsProperty().set(silenceAlarms);
+	}
+
+	public StringProperty printByProperty() {
+		return printBy;
+	}
+
+	public final String getPrintBy() {
+		return printByProperty().get();
+	}
+
+	public final void setPrintDialog(String printDialog) {
+		printByProperty().set(printDialog);
+	}
+
+	public BooleanProperty showPrintDialogProperty() {
+		return showPrintDialog;
+	}
+
+	public final boolean isShowPrintDialog() {
+		return showPrintDialogProperty().get();
+	}
+
+	public final void setprintDialog(boolean printDialog) {
+		showPrintDialogProperty().set(printDialog);
+	}
 }

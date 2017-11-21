@@ -34,6 +34,7 @@ import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.RowConstraints;
 import javafx.scene.layout.StackPane;
+import javafx.scene.paint.Color;
 import javafx.scene.shape.Circle;
 import javafx.scene.text.Font;
 import javafx.scene.text.Text;
@@ -44,6 +45,7 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 
 	private ObservableList<Entry> siblings;
 
+	private StringProperty account;
 	private StringProperty lastName;
 	private StringProperty addressNumber;
 	private StringProperty addressName;
@@ -52,11 +54,14 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 	private StringProperty state;
 	private StringProperty zip;
 	private StringProperty phone;
+	private StringProperty cellPhone;
 	private StringProperty lastNameYiddish;
 	private StringProperty fatherName;
 	private StringProperty cityYiddish;
 
 	private BooleanProperty selected;
+
+	private boolean disableConflictMerge = false;
 
 	private static final Model model = Model.getInstance();
 
@@ -71,9 +76,10 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		Entry prev = siblings.get(0);
 
 		bind(prev);
+		subscriptions.add(subscribe(prev));
 		for (int i = 1; i < siblings.size(); i++) {
 
-			subscriptions.add(subscribe(prev));
+			subscriptions.add(subscribe(siblings.get(i)));
 
 			String first = siblings.get(i).getFirstName().toLowerCase().replace(" ", "");
 			String firstY = siblings.get(i).getFirstNameYiddish().replace(" ", "");
@@ -88,6 +94,7 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 				}
 			}
 
+			attemptBind(prev, siblings.get(i), e -> e.accountProperty(), "Account Number");
 			attemptBind(prev, siblings.get(i), e -> e.lastNameProperty(), "Last Name");
 			attemptBind(prev, siblings.get(i), e -> e.addressNumberProperty(), "Address Number");
 			attemptBind(prev, siblings.get(i), e -> e.addressNameProperty(), "Address Name");
@@ -96,6 +103,7 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 			attemptBind(prev, siblings.get(i), e -> e.stateProperty(), "State");
 			attemptBind(prev, siblings.get(i), e -> e.zipProperty(), "Zip");
 			attemptBind(prev, siblings.get(i), e -> e.phoneProperty(), "Phone");
+			attemptBind(prev, siblings.get(i), e -> e.cellPhoneProperty(), "Cell Phone");
 			attemptBind(prev, siblings.get(i), e -> e.lastNameYiddishProperty(), "Yiddish Last Name");
 			attemptBind(prev, siblings.get(i), e -> e.fatherNameProperty(), "Father's Name");
 
@@ -112,6 +120,10 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		return FXCollections.unmodifiableObservableList(siblings);
 	}
 
+	public final String getAccount() {
+		return accountProperty().get();
+	}
+	
 	public final String getLastName() {
 		return lastNameProperty().get();
 	}
@@ -144,6 +156,10 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		return phoneProperty().get();
 	}
 
+	public final String getCellPhone() {
+		return cellPhoneProperty().get();
+	}
+
 	public final String getLastNameYiddish() {
 		return lastNameYiddishProperty().get();
 	}
@@ -155,9 +171,9 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 	public final String getCityYiddish() {
 		return cityYiddishProperty().get();
 	}
-
-	public final boolean isSelected() {
-		return selectedProperty().get();
+	
+	public final void setAccount(String str) {
+		accountProperty().set(str);
 	}
 
 	public final void setLastName(String str) {
@@ -192,6 +208,10 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		phoneProperty().set(str);
 	}
 
+	public final void setCellPhone(String str) {
+		cellPhoneProperty().set(str);
+	}
+
 	public final void setLastNameYiddish(String str) {
 		lastNameYiddishProperty().set(str);
 	}
@@ -204,8 +224,14 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		cityYiddishProperty().set(str);
 	}
 
-	public final void setSelected(Boolean bool) {
-		selectedProperty().set(bool);
+
+	public StringProperty accountProperty() {
+		if (account == null) {
+			account = new SimpleStringProperty(this, "account", "");
+
+		}
+
+		return account;
 	}
 
 	public StringProperty lastNameProperty() {
@@ -284,6 +310,15 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		return phone;
 	}
 
+	public StringProperty cellPhoneProperty() {
+		if (cellPhone == null) {
+			cellPhone = new SimpleStringProperty(this, "cellPhone", "");
+
+		}
+
+		return cellPhone;
+	}
+
 	public StringProperty lastNameYiddishProperty() {
 		if (lastNameYiddish == null) {
 			lastNameYiddish = new SimpleStringProperty(this, "lastNameYiddish", "");
@@ -320,6 +355,7 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 	}
 
 	private void bind(Entry e) {
+		accountProperty().bind(e.accountProperty());
 		lastNameProperty().bindBidirectional(e.lastNameProperty());
 		addressNumberProperty().bindBidirectional(e.addressNumberProperty());
 		addressNameProperty().bindBidirectional(e.addressNameProperty());
@@ -332,138 +368,200 @@ public class FamilyGrouping implements Selectable, Comparable<FamilyGrouping> {
 		fatherNameProperty().bindBidirectional(e.fatherNameProperty());
 		cityYiddishProperty().bindBidirectional(e.cityYiddishProperty());
 	}
+	
+	public Entry newSibling() {
+		Entry newEntry = new Entry(model.getSpreadsheet());
+		
+		newEntry.accountProperty().bind(accountProperty());
+		newEntry.lastNameProperty().bindBidirectional(lastNameProperty());
+		newEntry.addressNumberProperty().bindBidirectional(addressNumberProperty());
+		newEntry.addressNameProperty().bindBidirectional(addressNameProperty());
+		newEntry.aptProperty().bindBidirectional(aptProperty());
+		newEntry.cityProperty().bindBidirectional(cityProperty());
+		newEntry.stateProperty().bindBidirectional(stateProperty());
+		newEntry.zipProperty().bindBidirectional(zipProperty());
+		newEntry.phoneProperty().bindBidirectional(phoneProperty());
+		newEntry.lastNameYiddishProperty().bindBidirectional(lastNameYiddishProperty());
+		newEntry.fatherNameProperty().bindBidirectional(fatherNameProperty());
+		newEntry.cityYiddishProperty().bindBidirectional(cityYiddishProperty());
+		
+		return newEntry;
+		
+	}
 
-	public static void attemptBind(Entry e1, Entry e2, Function<Entry, StringProperty> extractor, String name) {
+	public void attemptBind(Entry e1, Entry e2, Function<Entry, StringProperty> extractor, String name) {
 		StringProperty p1 = extractor.apply(e1);
 		StringProperty p2 = extractor.apply(e2);
 		if (p1.get().equals(p2.get())) {
 			p1.bindBidirectional(p2);
 			return;
 		}
-		if (model.isIgnoreConflicts())
-			return;
+		if (!model.isIgnoreConflicts()) {
 
-		Text lastName1 = new Text();
-		Text addressNumber1 = new Text();
-		Text addressName1 = new Text();
-		Text apt1 = new Text();
-		Text city1 = new Text();
-		Text state1 = new Text();
-		Text zip1 = new Text();
-		Text phone1 = new Text();
-		Text lastNameYiddish1 = new Text();
-		Text fatherName1 = new Text();
+			Text id1 = new Text();
+			Text account1 = new Text();
+			Text lastName1 = new Text();
+			Text addressNumber1 = new Text();
+			Text addressName1 = new Text();
+			Text apt1 = new Text();
+			Text city1 = new Text();
+			Text state1 = new Text();
+			Text zip1 = new Text();
+			Text phone1 = new Text();
+			Text lastNameYiddish1 = new Text();
+			Text fatherName1 = new Text();
 
-		lastName1.textProperty().bind(e1.lastNameProperty().concat("\n"));
-		addressNumber1.textProperty().bind(e1.addressNumberProperty().concat(" "));
-		addressName1.textProperty().bind(e1.addressNameProperty().concat(" "));
-		apt1.textProperty().bind(e1.aptProperty().concat("\n"));
-		city1.textProperty().bind(e1.cityProperty().concat(", "));
-		state1.textProperty().bind(e1.stateProperty().concat(" "));
-		zip1.textProperty().bind(e1.zipProperty().concat("\n"));
-		phone1.textProperty().bind(e1.phoneProperty().concat("\n\n"));
-		lastNameYiddish1.textProperty().bind(e1.lastNameYiddishProperty());
-		fatherName1.textProperty().bind(e1.fatherNameProperty().concat(" "));
+			id1.textProperty().bind(Bindings.format("ID: %s\n\n", e1.idProperty()));
+			account1.textProperty().bind(Bindings.format("Account: %s\n", e1.accountProperty()));
+			lastName1.textProperty().bind(e1.lastNameProperty().concat("\n"));
+			addressNumber1.textProperty().bind(e1.addressNumberProperty().concat(" "));
+			addressName1.textProperty().bind(e1.addressNameProperty().concat(" "));
+			apt1.textProperty().bind(e1.aptProperty().concat("\n"));
+			city1.textProperty().bind(e1.cityProperty().concat(", "));
+			state1.textProperty().bind(e1.stateProperty().concat(" "));
+			zip1.textProperty().bind(e1.zipProperty().concat("\n"));
+			phone1.textProperty().bind(e1.phoneProperty());
+			lastNameYiddish1.textProperty().bind(e1.lastNameYiddishProperty());
+			fatherName1.textProperty().bind(e1.fatherNameProperty().concat(" "));
 
-		Text lastName2 = new Text();
-		Text addressNumber2 = new Text();
-		Text addressName2 = new Text();
-		Text apt2 = new Text();
-		Text city2 = new Text();
-		Text state2 = new Text();
-		Text zip2 = new Text();
-		Text phone2 = new Text();
-		Text lastNameYiddish2 = new Text();
-		Text fatherName2 = new Text();
+			id1.setFill(Color.DODGERBLUE);
 
-		lastName2.textProperty().bind(e2.lastNameProperty().concat("\n"));
-		addressNumber2.textProperty().bind(e2.addressNumberProperty().concat(" "));
-		addressName2.textProperty().bind(e2.addressNameProperty().concat(" "));
-		apt2.textProperty().bind(e2.aptProperty().concat("\n"));
-		city2.textProperty().bind(e2.cityProperty().concat(", "));
-		state2.textProperty().bind(e2.stateProperty().concat(" "));
-		zip2.textProperty().bind(e2.zipProperty().concat("\n"));
-		phone2.textProperty().bind(e2.phoneProperty().concat("\n\n"));
-		lastNameYiddish2.textProperty().bind(e2.lastNameYiddishProperty());
-		fatherName2.textProperty().bind(e2.fatherNameProperty().concat(" "));
+			Text id2 = new Text();
+			Text account2 = new Text();
+			Text lastName2 = new Text();
+			Text addressNumber2 = new Text();
+			Text addressName2 = new Text();
+			Text apt2 = new Text();
+			Text city2 = new Text();
+			Text state2 = new Text();
+			Text zip2 = new Text();
+			Text phone2 = new Text();
+			Text lastNameYiddish2 = new Text();
+			Text fatherName2 = new Text();
 
-		TextFlow flow1 = new TextFlow(lastName1, addressNumber1, addressName1, apt1, city1, state1, zip1,
-				new Text("\n\n"), fatherName1, lastNameYiddish1);
-		flow1.setTextAlignment(TextAlignment.CENTER);
+			id2.textProperty().bind(Bindings.format("ID: %s\n\n", e2.idProperty()));
+			account2.textProperty().bind(Bindings.format("Account: %s\n", e2.accountProperty()));
+			lastName2.textProperty().bind(e2.lastNameProperty().concat("\n"));
+			addressNumber2.textProperty().bind(e2.addressNumberProperty().concat(" "));
+			addressName2.textProperty().bind(e2.addressNameProperty().concat(" "));
+			apt2.textProperty().bind(e2.aptProperty().concat("\n"));
+			city2.textProperty().bind(e2.cityProperty().concat(", "));
+			state2.textProperty().bind(e2.stateProperty().concat(" "));
+			zip2.textProperty().bind(e2.zipProperty().concat("\n"));
+			phone2.textProperty().bind(e2.phoneProperty());
+			lastNameYiddish2.textProperty().bind(e2.lastNameYiddishProperty());
+			fatherName2.textProperty().bind(e2.fatherNameProperty().concat(" "));
 
-		TextFlow flow2 = new TextFlow(lastName2, addressNumber2, addressName2, apt2, city2, state2, zip2,
-				new Text("\n\n"), fatherName2, lastNameYiddish2);
-		flow2.setTextAlignment(TextAlignment.CENTER);
+			id2.setFill(Color.DODGERBLUE);
+			
+			TextFlow flow1 = new TextFlow(id1, account1, lastName1, addressNumber1, addressName1, apt1, city1, state1, zip1,
+					new Text("\n\n"), fatherName1, lastNameYiddish1);
+			flow1.setTextAlignment(TextAlignment.CENTER);
 
-		Text info = new Text("Please fix the family information conflict");
-		info.setFont(Font.font(14));
-		Text fieldName = new Text(name);
+			TextFlow flow2 = new TextFlow(id2, account2, lastName2, addressNumber2, addressName2, apt2, city2, state2, zip2,
+					new Text("\n\n"), fatherName2, lastNameYiddish2);
+			flow2.setTextAlignment(TextAlignment.CENTER);
 
-		TextField field1 = new TextField();
-		TextField field2 = new TextField();
+			Text info = new Text("Please fix the family information conflict");
+			info.setFont(Font.font(14));
+			
+			Text fieldName = new Text(name);
+			fieldName.setFill(Color.DARKCYAN);
+			fieldName.setFont(Font.font(14));
 
-		Button shiftLeft = new JFXButton("<");
-		Button shiftRight = new JFXButton(">");
+			TextField field1 = new TextField();
+			TextField field2 = new TextField();
 
-		shiftRight.setStyle("-fx-background-color: darkcyan; -fx-text-fill: white; -fx-font-weight: bold;");
-		shiftLeft.styleProperty().bind(shiftRight.styleProperty());
-		shiftRight.setShape(new Circle(15));
-		shiftLeft.shapeProperty().bind(shiftRight.shapeProperty());
+			Button shiftLeft = new JFXButton("<");
+			Button shiftRight = new JFXButton(">");
 
-		GridPane grid = new GridPane();
-		grid.add(info, 0, 0, 4, 1);
-		grid.add(flow1, 0, 2, 2, 1);
-		grid.add(flow2, 2, 2, 2, 1);
-		grid.add(new Separator(), 0, 3, 4, 1);
-		grid.add(fieldName, 1, 3, 2, 1);
-		grid.add(field1, 0, 4, 2, 1);
-		grid.add(field2, 2, 4, 2, 1);
-		grid.add(shiftRight, 1, 5);
-		grid.add(shiftLeft, 2, 5);
+			shiftRight.setStyle("-fx-background-color: darkcyan; -fx-text-fill: white; -fx-font-weight: bold;");
+			shiftLeft.styleProperty().bind(shiftRight.styleProperty());
+			shiftRight.setShape(new Circle(15));
+			shiftLeft.shapeProperty().bind(shiftRight.shapeProperty());
 
-		GridPane.setHalignment(info, HPos.CENTER);
-		GridPane.setHalignment(flow1, HPos.CENTER);
-		GridPane.setHalignment(flow2, HPos.CENTER);
-		GridPane.setHalignment(fieldName, HPos.CENTER);
-		GridPane.setHalignment(field1, HPos.CENTER);
-		GridPane.setHalignment(field2, HPos.CENTER);
-		GridPane.setHalignment(shiftRight, HPos.CENTER);
-		GridPane.setHalignment(shiftLeft, HPos.CENTER);
+			GridPane grid = new GridPane();
+			grid.add(info, 0, 0, 4, 1);
+			grid.add(flow1, 0, 2, 2, 1);
+			grid.add(flow2, 2, 2, 2, 1);
+			grid.add(fieldName, 1, 3, 2, 1);
+			grid.add(field1, 0, 4, 2, 1);
+			grid.add(field2, 2, 4, 2, 1);
+			grid.add(shiftRight, 1, 5);
+			grid.add(shiftLeft, 2, 5);
 
-		GridPane.setValignment(info, VPos.CENTER);
-		GridPane.setValignment(flow1, VPos.CENTER);
-		GridPane.setValignment(flow2, VPos.CENTER);
-		GridPane.setValignment(fieldName, VPos.BOTTOM);
-		GridPane.setValignment(field1, VPos.CENTER);
-		GridPane.setValignment(field2, VPos.CENTER);
-		GridPane.setValignment(shiftRight, VPos.TOP);
-		GridPane.setValignment(shiftLeft, VPos.TOP);
+			GridPane.setHalignment(info, HPos.CENTER);
+			GridPane.setHalignment(flow1, HPos.CENTER);
+			GridPane.setHalignment(flow2, HPos.CENTER);
+			GridPane.setHalignment(fieldName, HPos.CENTER);
+			GridPane.setHalignment(field1, HPos.CENTER);
+			GridPane.setHalignment(field2, HPos.CENTER);
+			GridPane.setHalignment(shiftRight, HPos.CENTER);
+			GridPane.setHalignment(shiftLeft, HPos.CENTER);
 
-		GridPane.setMargin(field1, new Insets(0, 10, 0, 10));
-		GridPane.setMargin(field2, new Insets(0, 10, 0, 10));
+			GridPane.setValignment(info, VPos.CENTER);
+			GridPane.setValignment(flow1, VPos.CENTER);
+			GridPane.setValignment(flow2, VPos.CENTER);
+			GridPane.setValignment(fieldName, VPos.BOTTOM);
+			GridPane.setValignment(field1, VPos.CENTER);
+			GridPane.setValignment(field2, VPos.CENTER);
+			GridPane.setValignment(shiftRight, VPos.TOP);
+			GridPane.setValignment(shiftLeft, VPos.TOP);
 
-		grid.getColumnConstraints().addAll(Collections.nCopies(4, new ColumnConstraints(50, 100, 120)));
-		grid.getRowConstraints().addAll(Collections.nCopies(6, new RowConstraints(30, 60, 100)));
+			GridPane.setMargin(field1, new Insets(0, 10, 0, 10));
+			GridPane.setMargin(field2, new Insets(0, 10, 0, 10));
 
-		grid.setAlignment(Pos.CENTER);
+			grid.getColumnConstraints().addAll(Collections.nCopies(4, new ColumnConstraints(50, 100, 120)));
+			grid.getRowConstraints().addAll(Collections.nCopies(6, new RowConstraints(30, 60, 100)));
 
-		shiftRight.setFocusTraversable(false);
-		shiftLeft.setFocusTraversable(false);
+			grid.setAlignment(Pos.CENTER);
 
-		field1.setText(p1.get());
-		field2.setText(p2.get());
+			shiftRight.setFocusTraversable(false);
+			shiftLeft.setFocusTraversable(false);
 
-		shiftRight.setOnAction(evt -> field2.setText(field1.getText()));
-		shiftLeft.setOnAction(evt -> field1.setText(field2.getText()));
+			field1.setText(p1.get());
+			field2.setText(p2.get());
 
-		BooleanBinding disable = Bindings.createBooleanBinding(() -> !field1.getText().equals(field2.getText()),
-				field1.textProperty(), field2.textProperty());
+			shiftRight.setOnAction(evt -> field2.setText(field1.getText()));
+			shiftLeft.setOnAction(evt -> field1.setText(field2.getText()));
 
-		Util.createDialog(new StackPane(grid), "Family Conflict", disable, ButtonType.OK)
-				.filter(t -> t == ButtonType.OK).ifPresent(t -> {
-					p1.set(field1.getText());
-					p2.bindBidirectional(p1);
+			BooleanBinding disable = Bindings.createBooleanBinding(() -> !field1.getText().equals(field2.getText()),
+					field1.textProperty(), field2.textProperty());
+
+			ButtonType button = Util.createDialog(new StackPane(grid), "Family Conflict", disable, ButtonType.OK)
+					.filter(t -> t == ButtonType.OK).orElse(null);
+
+			if (button != null) {
+				p1.set(field1.getText());
+				p2.bindBidirectional(p1);
+			} else {
+				p1.addListener((obs, ov, nv) -> {
+					if (!disableConflictMerge)
+						p2.set(nv);
 				});
+				p2.addListener((obs, ov, nv) -> {
+					if (!disableConflictMerge)
+						p1.set(nv);
+				});
+			}
+		} else {
+			p1.addListener((obs, ov, nv) -> {
+				if (!disableConflictMerge)
+					p2.set(nv);
+			});
+			p2.addListener((obs, ov, nv) -> {
+				if (!disableConflictMerge)
+					p1.set(nv);
+			});
+		}
+	}
+	
+	public void setDisableConflictMerge(boolean bool) {
+		disableConflictMerge = bool;
+	}
+	
+	public boolean isDisableConflictMerge() {
+		return disableConflictMerge;
 	}
 
 	private Subscription subscribe(Entry e) {

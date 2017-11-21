@@ -5,25 +5,28 @@ import java.net.BindException;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
-import java.net.UnknownHostException;
 import java.time.Instant;
 
-import org.hafotzastehillim.fx.spreadsheet.LoginDialog;
+import org.hafotzastehillim.fx.print.PrintPane;
+import org.hafotzastehillim.fx.print.PrintTemplate;
 import org.hafotzastehillim.fx.spreadsheet.SheetsAPI;
-import org.hafotzastehillim.fx.spreadsheet.Spreadsheet;
 import org.hafotzastehillim.fx.util.Util;
+import org.scenicview.ScenicView;
 
-import com.jfoenix.controls.JFXDecorator;
 import com.jfoenix.controls.JFXSnackbar;
 import com.jfoenix.controls.JFXSnackbar.SnackbarEvent;
+import com.jfoenix.controls.JFXTimePicker;
+import com.jfoenix.skins.JFXTimePickerContent;
+import com.jfoenix.skins.JFXTimePickerSkin;
 
 import javafx.application.Application;
 import javafx.application.Platform;
-import javafx.concurrent.Service;
-import javafx.concurrent.Task;
+import javafx.scene.Node;
 import javafx.scene.Scene;
 import javafx.scene.image.Image;
 import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.StackPane;
+import javafx.scene.text.Font;
 import javafx.stage.Stage;
 
 public class Main extends Application {
@@ -44,6 +47,7 @@ public class Main extends Application {
 	}
 
 	private ServerSocket server;
+	private volatile Stage primary;
 
 	@Override
 	public void init() throws Exception {
@@ -55,9 +59,11 @@ public class Main extends Application {
 
 	@Override
 	public void start(Stage primaryStage) throws Exception {
-		Model.getInstance().setPrimaryStage(primaryStage);
+		Model.getInstance().registerStage(primaryStage);
 
+		primary = primaryStage;
 		initSingleInstance();
+
 		running = true;
 		app = this;
 
@@ -73,8 +79,11 @@ public class Main extends Application {
 
 		primaryStage.getIcons().add(ICON);
 		primaryStage.setTitle("Point Entry");
+		primaryStage.setResizable(false);
 		primaryStage.setScene(s);
 		primaryStage.show();
+
+		// -javaagent:lib/scenicView.jar
 
 	}
 
@@ -114,7 +123,9 @@ public class Main extends Application {
 					} catch (IOException e) {
 					}
 
-					Platform.runLater(() -> Model.getInstance().getPrimaryStage().toFront());
+					Platform.runLater(() -> {
+						primary.toFront();
+					});
 				}
 			});
 

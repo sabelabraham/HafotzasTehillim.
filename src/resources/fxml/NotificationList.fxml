@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.ListView?>
+<?import javafx.scene.control.ToggleButton?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.HBox?>
+<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.VBox?>
+<?import javafx.scene.shape.SVGPath?>
+<?import javafx.scene.text.Font?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefHeight="400.0" prefWidth="600.0" type="StackPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <children>
+      <VBox>
+         <children>
+            <ListView fx:id="list" fixedCellSize="75.0" focusTraversable="false" />
+            <HBox alignment="CENTER" spacing="75.0">
+               <children>
+                  <JFXButton fx:id="clearAll" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#clearAllAction" ripplerFill="#969696">
+                     <graphic>
+                        <SVGPath content="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z" scaleX="1.2" scaleY="1.2" styleClass="svg-path" />
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Clear All Notifications" />
+                     </tooltip>
+                  </JFXButton>
+                  <ToggleButton fx:id="silence" contentDisplay="GRAPHIC_ONLY" focusTraversable="false">
+                     <graphic>
+                        <SVGPath content="M14,20A2,2 0 0,1 12,22A2,2 0 0,1 10,20H14M19.74,21.57L17.17,19H3L6,16V10C6,9.35 6.1,8.72 6.3,8.13L3.47,5.3L4.89,3.89L7.29,6.29L21.15,20.15L19.74,21.57M11,4.08V3A1,1 0 0,1 12,2A1,1 0 0,1 13,3V4.08C15.84,4.56 18,7.03 18,10V14.17L8.77,4.94C9.44,4.5 10.19,4.22 11,4.08Z" styleClass="svg-path" />
+                     </graphic>
+                     <tooltip>
+                        <Tooltip text="Silence Notifications" />
+                     </tooltip>
+                  </ToggleButton>
+               </children>
+               <padding>
+                  <Insets top="10.0" />
+               </padding>
+            </HBox>
+         </children>
+      </VBox>
+      <Label fx:id="noNotes" text="No New Notifications" textFill="#969696" translateY="-17.0">
+         <font>
+            <Font size="24.0" />
+         </font>
+      </Label>
+   </children>
+   <padding>
+      <Insets bottom="15.0" left="15.0" right="15.0" top="15.0" />
+   </padding>
+</fx:root>

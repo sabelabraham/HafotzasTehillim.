@@ -1,0 +1,31 @@
+
+.list-view .list-cell:selected {
+    -fx-background-color: -fx-control-inner-background ;
+}
+.list-view .list-cell:selected:odd {
+    -fx-background-color: -fx-control-inner-background-alt ;
+}
+
+.list-view .list-cell:selected:hover,
+.list-view .list-cell:selected:odd:hover,
+.list-view .list-cell:hover {
+    -fx-background-color:lightblue, aliceblue;
+    -fx-background-insets: 0.0, 1.0;
+    -fx-background-radius: 7.0;
+}
+
+.svg-path {
+	-fx-fill: gray;
+}
+
+.toggle-button {
+	-fx-background-color: transparent;
+}
+
+.toggle-button:selected {
+	-fx-background-color: #969696;
+}
+
+.toggle-button:selected .svg-path {
+	-fx-fill: -fx-control-inner-background-alt ;
+}

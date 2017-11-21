@@ -1,0 +1,81 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import com.jfoenix.controls.JFXCheckBox?>
+<?import javafx.geometry.Insets?>
+<?import javafx.scene.control.DatePicker?>
+<?import javafx.scene.control.Label?>
+<?import javafx.scene.control.TextField?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" type="GridPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+  <columnConstraints>
+      <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
+      <ColumnConstraints halignment="CENTER" hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+      <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="75.0" />
+      <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
+    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+      <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="85.0" />
+  </columnConstraints>
+  <rowConstraints>
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="SOMETIMES" />
+      <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
+    <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
+    <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+  </rowConstraints>
+   <children>
+      <TextField fx:id="account" onAction="#searchAccount" GridPane.columnIndex="2" GridPane.rowIndex="2" />
+      <TextField fx:id="sum" GridPane.columnIndex="5" GridPane.rowIndex="1">
+         <GridPane.margin>
+            <Insets left="20.0" />
+         </GridPane.margin>
+      </TextField>
+      <DatePicker fx:id="date" editable="false" maxWidth="1.7976931348623157E308" GridPane.columnIndex="2" GridPane.rowIndex="1" />
+      <TextField fx:id="by" GridPane.columnIndex="5" GridPane.rowIndex="2">
+         <GridPane.margin>
+            <Insets />
+         </GridPane.margin>
+      </TextField>
+      <TextField fx:id="city" GridPane.columnIndex="2" GridPane.rowIndex="6" />
+      <TextField fx:id="address" GridPane.columnIndex="2" GridPane.rowIndex="5" />
+      <TextField fx:id="name" GridPane.columnIndex="2" GridPane.rowIndex="4">
+         <GridPane.margin>
+            <Insets left="20.0" />
+         </GridPane.margin>
+      </TextField>
+      <TextField fx:id="hebrewName" nodeOrientation="RIGHT_TO_LEFT" GridPane.columnIndex="5" GridPane.rowIndex="4">
+         <GridPane.margin>
+            <Insets />
+         </GridPane.margin>
+      </TextField>
+      <Label text="Date: " GridPane.rowIndex="1" />
+      <Label text="Account: " GridPane.rowIndex="2" />
+      <Label prefHeight="0.0" prefWidth="31.0" text="Mr." GridPane.columnIndex="2" GridPane.rowIndex="4" />
+      <Label text="Name: " GridPane.rowIndex="4" />
+      <JFXButton fx:id="print" defaultButton="true" onAction="#printAction" style="-fx-background-color: dodgerblue;" text="Print" textFill="WHITE" GridPane.columnIndex="6" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
+      <Label text="Address: " GridPane.rowIndex="5" />
+      <Label text="City: " GridPane.rowIndex="6" />
+      <Label text="By: " GridPane.columnIndex="3" GridPane.rowIndex="2" />
+      <Label text="Sum: " GridPane.columnIndex="3" GridPane.rowIndex="1" />
+      <Label text="  $" GridPane.columnIndex="5" GridPane.rowIndex="1" />
+      <Label text="נאמען: " GridPane.columnIndex="6" GridPane.halignment="RIGHT" GridPane.rowIndex="4">
+         <GridPane.margin>
+            <Insets right="5.0" />
+         </GridPane.margin>
+      </Label>
+      <JFXCheckBox fx:id="printDialog" focusTraversable="false" text="Show Print Dialog" GridPane.columnIndex="5" GridPane.rowIndex="6" />
+      <Label text="הי&quot;ו" GridPane.columnIndex="3" GridPane.rowIndex="4" />
+      <Label text="הר&quot;ר" GridPane.columnIndex="6" GridPane.rowIndex="4">
+         <GridPane.margin>
+            <Insets left="5.0" />
+         </GridPane.margin>
+      </Label>
+   </children>
+</fx:root>

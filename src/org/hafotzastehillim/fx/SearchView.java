@@ -34,6 +34,7 @@ import javafx.beans.binding.StringBinding;
 import javafx.beans.property.IntegerProperty;
 import javafx.beans.property.ReadOnlyObjectProperty;
 import javafx.beans.property.SimpleStringProperty;
+import javafx.beans.value.ChangeListener;
 import javafx.beans.value.ObservableValue;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
@@ -80,6 +81,9 @@ public class SearchView extends VBox {
 	private Spinner<Integer> currentCampaign;
 	private IntegerProperty campaignIndex;
 
+	private Text accountLabel;
+	private Text account;
+	private Text idLabel;
 	private Text id;
 	private Text name;
 	private Text address;
@@ -189,15 +193,26 @@ public class SearchView extends VBox {
 
 		model.currentEntryProperty().bind(selected);
 
+		accountLabel = new Text("Account: ");
+		account = new Text();
+		idLabel = new Text("Memeber ID: ");
 		id = new Text();
 		name = new Text();
 		address = new Text();
 		phone = new Text();
 		total = new Text();
 
-		id.setFill(Color.DODGERBLUE);
-		id.setFont(Font.font("Monospaced", 15));
+		accountLabel.setFont(Font.font("Monospaced", 15));
+		accountLabel.visibleProperty().bind(account.textProperty().isNotEmpty());
 		
+		account.setFont(Font.font("Monospaced", 15));
+		account.setFill(Color.DODGERBLUE);
+
+		idLabel.setFont(Font.font("Monospaced", 15));
+		id.setFont(Font.font("Monospaced", 15));
+		id.setFill(Color.DODGERBLUE);
+
+		account.textProperty().bind(selected.flatMap(e -> e.accountProperty()));
 		id.textProperty().bind(selected.flatMap(e -> e.idProperty()));
 		name.textProperty().bind(Bindings.format("%s %s", selected.flatMap(e -> e.firstNameProperty()),
 				selected.flatMap(e -> e.lastNameProperty())));
@@ -214,22 +229,44 @@ public class SearchView extends VBox {
 		sep2.setMouseTransparent(true);
 		sep2.setPadding(new Insets(10));
 
-		VBox info = new VBox(id, sep1, name, address, phone, sep2, total);
+		HBox accountBox = new HBox(accountLabel, account);
+		accountBox.setAlignment(Pos.CENTER);
+		HBox idBox = new HBox(idLabel, id);
+		idBox.setAlignment(Pos.CENTER);
+
+		VBox info = new VBox(accountBox, idBox, sep1, name, address, phone, sep2, total);
 		info.visibleProperty().bind(selected.map(e -> true).orElseConst(false));
 		info.setAlignment(Pos.CENTER);
 		info.setId("info");
 		info.setOnMouseClicked(evt -> {
-			List<Entry> family = new ArrayList<>();
-			family.add(selected.getValue());
-			for (Entry e : resultList) {
-				if (e == selected.getValue())
-					continue;
+			Entry se = selected.getValue();
+			if (!se.getPhone().isEmpty() && se.getId().equals(query.getText())) {
+				// Find family members
 
-				if (!e.getPhone().isEmpty() && e.getPhone().equals(selected.getValue().getPhone()))
-					family.add(e);
+				ObservableList<Entry> list = FXCollections.observableArrayList();
+				String phone = se.getPhone().replaceAll("[^\\d]", "");
+
+				Util.onceOnSucceeded(model.getSpreadsheet().searchService().stateProperty(), () -> {
+					list.add(0, se);
+					DetailsPane.showDialog(list);
+				});
+
+				model.getSpreadsheet().searchEntries(list, data -> data.get(Column.PHONE.ordinal()).equals(phone)
+						&& !data.get(Column.ID_NUMBER.ordinal()).equals(se.getId()));
+
+			} else {
+				List<Entry> family = new ArrayList<>();
+				family.add(se);
+				for (Entry e : resultList) {
+					if (e == selected.getValue())
+						continue;
+
+					if (!e.getPhone().isEmpty() && e.getPhone().equals(selected.getValue().getPhone()))
+						family.add(e);
+				}
+
+				DetailsPane.showDialog(family);
 			}
-
-			DetailsPane.showDialog(family);
 		});
 
 		saveButton = new JFXButton();
@@ -373,6 +410,5 @@ public class SearchView extends VBox {
 				resultListView.getSelectionModel().selectFirst();
 			}
 		});
-
 	}
 }

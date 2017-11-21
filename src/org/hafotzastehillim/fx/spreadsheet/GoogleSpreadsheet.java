@@ -17,13 +17,20 @@ import java.util.function.Consumer;
 import java.util.function.Predicate;
 import java.util.stream.Collectors;
 
+import org.apache.poi.ss.usermodel.DataFormatter;
+import org.apache.poi.ss.usermodel.Row;
+import org.apache.poi.ss.usermodel.Sheet;
+import org.apache.poi.ss.usermodel.Workbook;
+import org.apache.poi.xssf.usermodel.XSSFWorkbook;
 import org.hafotzastehillim.fx.Main;
+import org.hafotzastehillim.fx.notes.NoteManager;
 import org.hafotzastehillim.fx.util.ConnectionState;
 import org.hafotzastehillim.fx.util.Ping;
 import org.hafotzastehillim.fx.util.Search;
 import org.hafotzastehillim.fx.util.Util;
 
 import com.google.api.client.googleapis.json.GoogleJsonResponseException;
+import com.google.api.client.http.HttpHeaders;
 import com.google.api.services.sheets.v4.Sheets;
 import com.google.api.services.sheets.v4.model.AppendValuesResponse;
 import com.google.api.services.sheets.v4.model.BatchGetValuesResponse;
@@ -146,6 +153,57 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		reload();
 
 		updater.start();
+
+//		loadService().setOnSucceeded(evt -> {
+//			new Thread(() -> {
+//				System.out.println("Creating entry list");
+//				List<Entry> entries = getEntries(data -> true);
+//				System.out.println("Done creating entry list");
+//				System.out.println("Loading excel sheet");
+//
+//				Map<String, String> map = new HashMap<>();
+//				try {
+//					DataFormatter fmt = new DataFormatter();
+//					Workbook excel = new XSSFWorkbook("C:/Users/yossel/desktop/TelNumbers.xlsx");
+//					Sheet s = excel.getSheetAt(0);
+//
+//					for (int i = 0; i < s.getPhysicalNumberOfRows(); i++) {
+//						Row r = s.getRow(i);
+//						if (fmt.formatCellValue(r.getCell(4)).contains("("))
+//							map.put(fmt.formatCellValue(r.getCell(4)).trim(), fmt.formatCellValue(r.getCell(1)).trim());
+//						
+////						System.out.println(fmt.formatCellValue(r.getCell(4)).trim());
+//					}
+//				} catch (IOException e) {
+//					System.err.println("Error reading excel sheet, exiting...");
+//					System.exit(1);
+//				}
+//
+//				System.out.println("Done loading excel sheet");
+//				System.out.println("Populating entries with new data");
+//				System.out.println(map.size());
+//				for (Entry e : entries) {
+////					System.out.println(e.getPhone());
+//					String value = map.get(e.getPhone());
+//					if (value == null) {
+//						System.err.println("Missing account: " + e.getPhone() + " -> " + e.getId());
+//					} else {
+//						e.setAccount(value);
+////						System.out.println(e.getAccount());
+//					}
+//				}
+//
+//				System.out.println("Done populating entries with new data");
+//
+//				System.out.println("Pushing changes");
+//
+//				for (Entry e : entries) {
+//					if (e.isDetailsChanged())
+//						e.saveDetails();
+//				}
+//
+//			}).start();
+//		});
 	}
 
 	@Override
@@ -197,7 +255,8 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	public void addRow(int sheet, List<String> data, Consumer<Integer> callback) {
 
 		List<Object> objData = new ArrayList<>(data);
-		List<List<Object>> range = Arrays.asList(objData);
+		List<List<Object>> range = new ArrayList<>();
+		range.add(objData);
 
 		pushUpdate(new Update(tabs.get(sheet), range, true, callback));
 	}
@@ -265,7 +324,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 						"Point Entry could not connect to the Internet.\nLoad Failed");
 			} else {
 				Util.showErrorDialog(e);
-			} 
+			}
 		}
 		if (response == null)
 			return "";
@@ -278,7 +337,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 
 	// FIXME add placeInCache()
 	public List<List<Object>> doLoadRange(String range) {
-	
+
 		ValueRange response = null;
 		try {
 			response = service.spreadsheets().values().get(sheetId, range).execute();
@@ -298,10 +357,10 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		}
-	
+
 		if (response == null)
 			return Arrays.asList(Arrays.asList());
-	
+
 		return response.getValues();
 	}
 
@@ -311,7 +370,7 @@ public class GoogleSpreadsheet implements Spreadsheet {
 	}
 
 	public List<List<List<Object>>> doLoadRangeBatch(List<String> range) {
-	
+
 		BatchGetValuesResponse response = null;
 		try {
 			response = service.spreadsheets().values().batchGet(sheetId).setRanges(range).execute();
@@ -331,10 +390,10 @@ public class GoogleSpreadsheet implements Spreadsheet {
 				Util.showErrorDialog(e);
 			}
 		}
-	
+
 		if (response == null)
 			return Arrays.asList(Arrays.asList());
-	
+
 		return response.getValueRanges().stream().map(vr -> vr.getValues()).collect(Collectors.toList());
 	}
 
@@ -559,17 +618,18 @@ public class GoogleSpreadsheet implements Spreadsheet {
 			cachedList = tab.get(row);
 		}
 
+		cachedList.clear();
+
 		for (int i = 0; i < values.size(); i++) {
 			// Ignore formulae since it's very rare to need the formula text but rather the
 			// result value. You can force inserting formula string by placeInCache(int,
 			// int, int, String);
 
 			if (values.get(i).toString().startsWith("="))
-				values.set(i, "");
+				cachedList.add("");
+			else
+				cachedList.add(values.get(i));
 		}
-
-		cachedList.clear();
-		cachedList.addAll(values);
 	}
 
 	@Override
@@ -1027,7 +1087,15 @@ public class GoogleSpreadsheet implements Spreadsheet {
 		}
 
 		Update(String range, String change, boolean append, Consumer<Integer> callback) {
-			this(range, Arrays.asList(Arrays.asList(change)), append, callback);
+			ArrayList<List<Object>> changeList = new ArrayList<>();
+			ArrayList<Object> inside = new ArrayList<>();
+			inside.add(change);
+			changeList.add(inside);
+			
+			this.range = range;
+			this.change = changeList;
+			this.append = append;
+			this.callback = callback;
 		}
 	}
 }

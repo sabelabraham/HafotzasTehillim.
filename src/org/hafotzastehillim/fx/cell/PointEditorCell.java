@@ -45,7 +45,6 @@ public class PointEditorCell extends ListCell<EditorData<Integer>> {
 		content.setAlignment(Pos.BASELINE_CENTER);
 		setAlignment(Pos.BASELINE_CENTER);
 		setGraphic(content);
-
 	}
 
 }

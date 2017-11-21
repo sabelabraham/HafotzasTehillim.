@@ -1,74 +1,35 @@
 package org.hafotzastehillim.fx;
 
-import java.awt.Color;
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.OutputStream;
-import java.time.Instant;
 import java.time.ZoneId;
 import java.time.format.DateTimeFormatter;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.prefs.Preferences;
-import java.util.stream.Collectors;
-
-import org.apache.poi.ss.usermodel.Cell;
-import org.apache.poi.ss.usermodel.FillPatternType;
-import org.apache.poi.ss.usermodel.HorizontalAlignment;
-import org.apache.poi.ss.usermodel.Row;
-import org.apache.poi.ss.usermodel.Row.MissingCellPolicy;
-import org.apache.poi.ss.usermodel.Sheet;
-import org.apache.poi.xssf.usermodel.XSSFCellStyle;
-import org.apache.poi.xssf.usermodel.XSSFColor;
-import org.apache.poi.xssf.usermodel.XSSFWorkbook;
-import org.hafotzastehillim.fx.cell.FamilyTableRow;
-import org.hafotzastehillim.fx.spreadsheet.Column;
 import org.hafotzastehillim.fx.spreadsheet.Entry;
 import org.hafotzastehillim.fx.spreadsheet.FamilyGrouping;
-import org.hafotzastehillim.fx.spreadsheet.Tab;
 import org.hafotzastehillim.fx.util.TableViewUtils;
-import org.hafotzastehillim.fx.util.Util;
-
 import com.jfoenix.controls.JFXButton;
 
-import javafx.beans.binding.Bindings;
 import javafx.beans.binding.BooleanBinding;
-import javafx.beans.property.ReadOnlyObjectWrapper;
 import javafx.collections.FXCollections;
 import javafx.collections.ObservableList;
 import javafx.geometry.Insets;
 import javafx.geometry.Pos;
 import javafx.scene.Node;
 import javafx.scene.Scene;
-import javafx.scene.control.CheckBox;
 import javafx.scene.control.ContextMenu;
 import javafx.scene.control.Label;
 import javafx.scene.control.MenuItem;
-import javafx.scene.control.SelectionMode;
 import javafx.scene.control.Separator;
-import javafx.scene.control.TableCell;
-import javafx.scene.control.TableRow;
-import javafx.scene.control.TableColumn;
 import javafx.scene.control.TableView;
-import javafx.scene.control.cell.CheckBoxTableCell;
-import javafx.scene.control.cell.PropertyValueFactory;
 import javafx.scene.input.KeyCode;
+import javafx.scene.input.KeyEvent;
 import javafx.scene.layout.ColumnConstraints;
 import javafx.scene.layout.GridPane;
 import javafx.scene.layout.StackPane;
 import javafx.scene.layout.VBox;
-import javafx.stage.FileChooser;
-import javafx.stage.Modality;
-import javafx.stage.FileChooser.ExtensionFilter;
 import javafx.stage.Stage;
-import javafx.util.Callback;
-
-import static org.hafotzastehillim.fx.spreadsheet.Column.*;
 
 public class ReportResultsView extends VBox {
 
@@ -224,16 +185,21 @@ public class ReportResultsView extends VBox {
 
 	void showStage(Node n, String title) {
 		Stage stage = new Stage();
+		Model.getInstance().registerStage(stage);
 		stage.setTitle(title);
 		stage.setMaximized(true);
 		stage.getIcons().add(Main.ICON);
 
-		stage.setScene(new Scene(new StackPane(n)));
+		Scene scene = new Scene(new StackPane(n));
+		stage.setScene(scene);
+
+		scene.addEventFilter(KeyEvent.KEY_PRESSED, evt -> {
+			if (evt.getCode() == KeyCode.ESCAPE)
+				stage.close();
+		});
+
 		stage.showAndWait();
 	}
-
-	private static final DateTimeFormatter FORMATTER = DateTimeFormatter.ofPattern("MMMM d, ''yy")
-			.withZone(ZoneId.systemDefault());
 
 	private TableView<Entry> getTable(ObservableList<Entry> items) {
 
