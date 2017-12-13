@@ -1,3 +1,32 @@
+@font-face {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: normal;
+    src: url('/resources/fonts/Roboto-Regular.ttf');
+}
+
+@font-face {
+    font-family: Roboto;
+    font-style: normal;
+    font-weight: bold;
+    src: url('/resources/fonts/Roboto-Bold.ttf');
+}
+
+@font-face {
+    font-family: Roboto;
+    font-style: italic;
+    font-weight: normal;
+    src: url('/resources/fonts/Roboto-Italic.ttf');
+}
+
+@font-face {
+    font-family: Roboto;
+    font-style: italic;
+    font-weight: bold;
+    src: url('/resources/fonts/Roboto-BoldItalic.ttf');
+}
+
+
 .root {
 	-fx-background-color: #f5f5f5;
 }
@@ -13,9 +42,9 @@
 
 .jfx-rippler {
 	-jfx-rippler-fill: gray;
-	-jfx-rippler-radius: 200;
+	-jfx-rippler-radius: 200.0;
 }
 
-.refresh .icon {
-	-fx-fill: #aaaaaa;
+SVGPath {
+	-fx-fill: gray;
 }

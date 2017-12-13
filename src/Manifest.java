@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 
 import fxlauncher.CreateManifest;
 import fxlauncher.FXManifest;
+import fxlauncher.LibraryFile;
 import javafx.application.Application;
 import javafx.application.Platform;
 import javafx.scene.input.Clipboard;
@@ -37,10 +38,10 @@ public class Manifest extends Application {
 		PrivateKey key = (PrivateKey) ks.getKey("mordechai", "MM122994".toCharArray());
 
 		FXManifest man = CreateManifest.create(URI.create("file:///C:/users/yossel/desktop/manifest/"),
-				"org.hafotzastehillim.fx.Main", Paths.get(URI.create("file:///C:/users/yossel/desktop/manifest/")),
-				key);
+				"org.hafotzastehillim.pointentry.fx.Main",
+				Paths.get(URI.create("file:///C:/users/yossel/desktop/manifest/")), key);
 		man.cacheDir = "USERLIB/PointEntry/lib/";
-		
+
 		String str = man.toString();
 
 		Pattern p1 = Pattern.compile("<lib file=\"pointentry\\.jar\".*(href=\".+\" ).*>");
@@ -55,13 +56,13 @@ public class Manifest extends Application {
 
 		String output = m2.group(1).replace(m1.group(1),
 				"href=\"https://www.dropbox.com/s/ldvgqfkwxtal9z9/pointentry.jar?dl=1\" ");
-		
+
 		System.out.println(man);
 		Map<DataFormat, Object> map = new HashMap<>();
 		map.put(DataFormat.PLAIN_TEXT, output + "\n");
-		
+
 		Platform.runLater(() -> Clipboard.getSystemClipboard().setContent(map));
 		Platform.exit();
-		
+
 	}
 }

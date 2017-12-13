@@ -13,7 +13,7 @@
 }
 
 #points-add, #shavuos-add {
-    -fx-text-fill: dodgerblue;
+    -fx-text-fill: #4285f4;
 }
 
 
@@ -22,4 +22,16 @@
 .list-view .scroll-bar:horizontal .increment-button,
 .list-view .scroll-bar:horizontal .decrement-button {
     -fx-padding:0.0;
+}
+
+.toggle-button {
+	-fx-background-color: transparent;
+}
+
+.toggle-button:selected {
+	-fx-background-color: red;
+}
+
+.toggle-button:selected SVGPath {
+	-fx-fill: -fx-control-inner-background-alt ;
 }

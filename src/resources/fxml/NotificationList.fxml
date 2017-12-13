@@ -17,14 +17,14 @@
       <VBox>
          <children>
             <ListView fx:id="list" fixedCellSize="75.0" focusTraversable="false" />
-            <HBox alignment="CENTER" spacing="75.0">
+            <HBox alignment="CENTER" spacing="85.0">
                <children>
                   <JFXButton fx:id="clearAll" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#clearAllAction" ripplerFill="#969696">
                      <graphic>
                         <SVGPath content="M5 13h14v-2H5v2zm-2 4h14v-2H3v2zM7 7v2h14V7H7z" scaleX="1.2" scaleY="1.2" styleClass="svg-path" />
                      </graphic>
                      <tooltip>
-                        <Tooltip text="Clear All Notifications" />
+                        <Tooltip text="Hide All Notifications" />
                      </tooltip>
                   </JFXButton>
                   <ToggleButton fx:id="silence" contentDisplay="GRAPHIC_ONLY" focusTraversable="false">

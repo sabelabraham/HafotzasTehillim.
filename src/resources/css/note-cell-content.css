@@ -1,0 +1,7 @@
+.check-box .box {
+	-fx-border-color: #aaaaaa;
+}
+
+.check-box .box .indeterminate-mark {
+	-fx-background-color: #aaaaaa
+}

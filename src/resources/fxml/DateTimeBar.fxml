@@ -1,24 +1,21 @@
 <?xml version="1.0" encoding="UTF-8"?>
 
 <?import com.jfoenix.controls.JFXDatePicker?>
-<?import javafx.geometry.Insets?>
 <?import javafx.scene.control.Label?>
 <?import javafx.scene.layout.HBox?>
-<?import javafx.scene.layout.Pane?>
-<?import javafx.scene.layout.StackPane?>
+<?import javafx.scene.layout.TilePane?>
 
-<fx:root style="-fx-border-color: darkcyan transparent  darkcyan transparent;" type="HBox" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root minWidth="200.0" style="-fx-border-color: darkcyan transparent  darkcyan transparent;" type="HBox" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
    <children>
       <JFXDatePicker fx:id="calendar" editable="false" maxWidth="12.0" HBox.hgrow="NEVER" />
-      <HBox alignment="CENTER_LEFT" prefWidth="66.0" HBox.hgrow="ALWAYS">
+      <TilePane alignment="CENTER">
          <children>
-            <Label fx:id="dateTime" text="Label" textFill="darkcyan" StackPane.alignment="CENTER_LEFT" />
-            <Pane maxWidth="1.7976931348623157E308" HBox.hgrow="ALWAYS" />
-            <Label fx:id="hebrewDate" text="Label" textFill="darkcyan" StackPane.alignment="CENTER_RIGHT" />
+            <Label fx:id="day" text="Label" textFill="darkcyan" />
+            <Label fx:id="date" text="Label" textFill="darkcyan" />
+            <Label fx:id="time" text="Label" textFill="darkcyan" />
+            <Label fx:id="hebrewDay" text="Label" textFill="darkcyan" />
+            <Label fx:id="hebrewDate" text="Label" textFill="darkcyan" />
          </children>
-         <padding>
-            <Insets bottom="5.0" left="10.0" right="10.0" top="5.0" />
-         </padding>
-      </HBox>
+      </TilePane>
    </children>
 </fx:root>

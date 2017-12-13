@@ -1,0 +1,3 @@
+.text-input-control:error {
+  -fx-text-box-border: red;
+}

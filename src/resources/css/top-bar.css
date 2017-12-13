@@ -1,3 +1,9 @@
-.svg-path, .refresh .icon {
-	-fx-fill: gray;
+.jfx-progress-bar .track {
+	-fx-background-color: eeeeee;
+	-fx-background-radius: 3;
+}
+
+.jfx-progress-bar .bar{
+	-fx-background-color: cccccc;
+	-fx-background-radius: 3;
 }

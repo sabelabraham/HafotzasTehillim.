@@ -53,7 +53,7 @@
 
 #search-field {
 	-fx-padding: 35.0 5.0 5.0 5.0;
-	-jfx-focus-color: dodgerblue;
+	-jfx-focus-color: #4285f4;
 	-jfx-unfocus-color: gray;
 	-jfx-label-float: true;
 	-fx-border-color: null;
@@ -62,13 +62,13 @@
 
 
 #search-icon, #save-icon {
-	-fx-fill: dodgerblue;
+	-fx-fill: #4285f4;
 	-fx-scale-x: 1.2;
 	-fx-scale-y: 1.2;
 }
 
 #details-button {
-	-fx-text-fill: dodgerblue;
+	-fx-text-fill: #4285f4;
 }
 
 #search-button {

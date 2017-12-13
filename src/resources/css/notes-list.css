@@ -14,9 +14,6 @@
     -fx-background-radius: 7.0;
 }
 
-.svg-path {
-	-fx-fill: gray;
-}
 
 .toggle-button {
 	-fx-background-color: transparent;
@@ -26,24 +23,14 @@
 	-fx-background-color: #969696;
 }
 
-.toggle-button:selected .svg-path {
+.toggle-button:selected SVGPath{
 	-fx-fill: -fx-control-inner-background-alt ;
 }
 
-.list-view .list-cell .check-box .box {
-	-fx-background-color: #969696,  -fx-control-inner-background;
-	-fx-background-insets: 0.0, 1.0;
-}
-
-.list-view .list-cell:odd .check-box .box {
-	-fx-background-color: #969696,  -fx-control-inner-background-alt;
-}
-
-#selectAll .box {
+.check-box .box {
 	-fx-border-color: #969696;
 }
 
-
-#selectAll .box .indeterminate-mark {
+.check-box .box .indeterminate-mark {
 	-fx-background-color: #969696
 }

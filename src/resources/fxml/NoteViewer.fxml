@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<?import com.jfoenix.controls.JFXButton?>
+<?import javafx.scene.control.TextArea?>
+<?import javafx.scene.control.Tooltip?>
+<?import javafx.scene.layout.ColumnConstraints?>
+<?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.RowConstraints?>
+<?import javafx.scene.shape.SVGPath?>
+
+
+<GridPane xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+   <columnConstraints>
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" percentWidth="10.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" percentWidth="40.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="10.0" percentWidth="40.0" />
+      <ColumnConstraints hgrow="SOMETIMES" maxWidth="1.7976931348623157E308" minWidth="0.0" percentWidth="10.0" />
+   </columnConstraints>
+   <rowConstraints>
+      <RowConstraints maxHeight="1.7976931348623157E308" minHeight="10.0" prefHeight="65.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="129.0" minHeight="0.0" prefHeight="83.0" vgrow="SOMETIMES" />
+      <RowConstraints maxHeight="129.0" minHeight="10.0" prefHeight="25.0" vgrow="SOMETIMES" />
+   </rowConstraints>
+   <children>
+      <TextArea fx:id="notes" focusTraversable="false" prefHeight="156.0" prefWidth="311.0" promptText="Type a note here, leave empty to delete note and remove reminder." wrapText="true" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="1" />
+      <JFXButton fx:id="createAlert" contentDisplay="GRAPHIC_ONLY" focusTraversable="false" onAction="#createAlertAction" ripplerFill="#969696" style="-fx-background-color: -fx-box-border, white; -fx-background-insets: 0,1;" text="Button" GridPane.columnIndex="2" GridPane.halignment="RIGHT">
+         <tooltip>
+            <Tooltip text="Set Reminder" />
+         </tooltip>
+         <graphic>
+            <SVGPath fx:id="alarmIcon" content="M12,20A7,7 0 0,1 5,13A7,7 0 0,1 12,6A7,7 0 0,1 19,13A7,7 0 0,1 12,20M12,4A9,9 0 0,0 3,13A9,9 0 0,0 12,22A9,9 0 0,0 21,13A9,9 0 0,0 12,4M12.5,8H11V14L15.75,16.85L16.5,15.62L12.5,13.25V8M7.88,3.39L6.6,1.86L2,5.71L3.29,7.24L7.88,3.39M22,5.72L17.4,1.86L16.11,3.39L20.71,7.25L22,5.72Z" styleClass="svg-path" />
+         </graphic>
+      </JFXButton>
+   </children>
+</GridPane>

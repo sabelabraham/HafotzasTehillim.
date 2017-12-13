@@ -5,7 +5,7 @@
 
 #browser {
     -jfx-button-type: RAISED;
-    -fx-background-color: dodgerblue;
+    -fx-background-color: #4285f4;
     -fx-text-fill: white;
 }
 
@@ -17,4 +17,12 @@
 
 .hyperlink:visited {
 	-fx-text-fill: green;
+}
+
+.jfx-progress-bar .bar {
+	-fx-background-color: orange;
+}
+
+.jfx-progress-bar:error .bar {
+	-fx-background-color: red;
 }

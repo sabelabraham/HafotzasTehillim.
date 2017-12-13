@@ -5,3 +5,15 @@
 .new-tab .tab-selected-line {
 	-fx-background-color: darkcyan;
 }
+
+.new-tab:disabled .tab-container .tab-label {
+	-fx-text-fill: darkcyan;
+}
+
+.tab .jfx-rippler {
+	-jfx-rippler-fill: #ffff8d;
+}
+
+.new-tab:disabled .jfx-rippler {
+	-jfx-rippler-fill: null;
+}

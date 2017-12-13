@@ -41,8 +41,8 @@
       <Separator prefWidth="200.0" GridPane.columnSpan="3" GridPane.rowIndex="6" GridPane.valignment="TOP" />
       <HBox alignment="CENTER_RIGHT" prefHeight="100.0" prefWidth="200.0" spacing="25.0" GridPane.columnIndex="1" GridPane.columnSpan="2" GridPane.rowIndex="6">
          <children>
-            <JFXButton fx:id="noAlarm" onAction="#noAlarmAction" style="-fx-background-color: dodgerblue;" text="No Reminder" textFill="WHITE" />
-            <JFXButton fx:id="ok" onAction="#okAction" style="-fx-background-color: lightgray;" text="OK" />
+            <JFXButton fx:id="noReminder" onAction="#noReminderAction" text="No Reminder" />
+            <JFXButton fx:id="ok" onAction="#okAction" text="OK" />
          </children>
          <padding>
             <Insets left="20.0" right="10.0" />

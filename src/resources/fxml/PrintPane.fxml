@@ -2,22 +2,26 @@
 
 <?import com.jfoenix.controls.JFXButton?>
 <?import com.jfoenix.controls.JFXCheckBox?>
+<?import com.jfoenix.controls.JFXRadioButton?>
 <?import javafx.geometry.Insets?>
 <?import javafx.scene.control.DatePicker?>
 <?import javafx.scene.control.Label?>
+<?import javafx.scene.control.Separator?>
 <?import javafx.scene.control.TextField?>
+<?import javafx.scene.control.ToggleGroup?>
 <?import javafx.scene.layout.ColumnConstraints?>
 <?import javafx.scene.layout.GridPane?>
+<?import javafx.scene.layout.HBox?>
 <?import javafx.scene.layout.RowConstraints?>
 
-<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" type="GridPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
+<fx:root maxHeight="-Infinity" maxWidth="-Infinity" minHeight="-Infinity" minWidth="-Infinity" prefWidth="681.0" type="GridPane" xmlns="http://javafx.com/javafx/8.0.141" xmlns:fx="http://javafx.com/fxml/1">
   <columnConstraints>
       <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="100.0" />
       <ColumnConstraints halignment="CENTER" hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
     <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
       <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="75.0" />
-      <ColumnConstraints halignment="RIGHT" hgrow="NEVER" minWidth="10.0" prefWidth="10.0" />
-    <ColumnConstraints hgrow="SOMETIMES" minWidth="10.0" prefWidth="200.0" />
+      <ColumnConstraints halignment="RIGHT" hgrow="NEVER" maxWidth="18.0" minWidth="10.0" prefWidth="14.0" />
+    <ColumnConstraints hgrow="SOMETIMES" maxWidth="197.0" minWidth="10.0" prefWidth="196.0" />
       <ColumnConstraints hgrow="NEVER" minWidth="10.0" prefWidth="85.0" />
   </columnConstraints>
   <rowConstraints>
@@ -29,6 +33,7 @@
       <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
     <RowConstraints minHeight="0.0" prefHeight="30.0" vgrow="NEVER" />
       <RowConstraints minHeight="10.0" prefHeight="30.0" vgrow="NEVER" />
+      <RowConstraints minHeight="10.0" prefHeight="50.0" vgrow="NEVER" />
   </rowConstraints>
    <children>
       <TextField fx:id="account" onAction="#searchAccount" GridPane.columnIndex="2" GridPane.rowIndex="2" />
@@ -59,7 +64,7 @@
       <Label text="Account: " GridPane.rowIndex="2" />
       <Label prefHeight="0.0" prefWidth="31.0" text="Mr." GridPane.columnIndex="2" GridPane.rowIndex="4" />
       <Label text="Name: " GridPane.rowIndex="4" />
-      <JFXButton fx:id="print" defaultButton="true" onAction="#printAction" style="-fx-background-color: dodgerblue;" text="Print" textFill="WHITE" GridPane.columnIndex="6" GridPane.halignment="CENTER" GridPane.rowIndex="6" />
+      <JFXButton fx:id="print" defaultButton="true" onAction="#printAction" text="Print" GridPane.columnIndex="6" GridPane.halignment="CENTER" GridPane.rowIndex="8" />
       <Label text="Address: " GridPane.rowIndex="5" />
       <Label text="City: " GridPane.rowIndex="6" />
       <Label text="By: " GridPane.columnIndex="3" GridPane.rowIndex="2" />
@@ -70,12 +75,23 @@
             <Insets right="5.0" />
          </GridPane.margin>
       </Label>
-      <JFXCheckBox fx:id="printDialog" focusTraversable="false" text="Show Print Dialog" GridPane.columnIndex="5" GridPane.rowIndex="6" />
+      <JFXCheckBox fx:id="printDialog" focusTraversable="false" text="Show Print Dialog" GridPane.columnIndex="5" GridPane.rowIndex="8" />
       <Label text="הי&quot;ו" GridPane.columnIndex="3" GridPane.rowIndex="4" />
       <Label text="הר&quot;ר" GridPane.columnIndex="6" GridPane.rowIndex="4">
          <GridPane.margin>
             <Insets left="5.0" />
          </GridPane.margin>
       </Label>
+      <HBox alignment="CENTER_LEFT" spacing="20.0" GridPane.columnIndex="4" GridPane.columnSpan="2" GridPane.rowIndex="6">
+         <children>
+            <JFXRadioButton fx:id="pledge" focusTraversable="false" text="Pledge">
+               <toggleGroup>
+                  <ToggleGroup fx:id="statementType" />
+               </toggleGroup>
+            </JFXRadioButton>
+            <JFXRadioButton fx:id="receipt" focusTraversable="false" text="Receipt" toggleGroup="$statementType" />
+         </children>
+      </HBox>
+      <Separator prefWidth="200.0" GridPane.columnSpan="7" GridPane.rowIndex="7" GridPane.valignment="BOTTOM" />
    </children>
 </fx:root>
